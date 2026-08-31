@@ -1,11 +1,55 @@
 
 #include <globals.hpp>
+#include <particle_system.hpp>
 #include <types.hpp>
 #include <ui.hpp>
-#include <particle_system.hpp>
 
-#include <raylib.h>
 #include <nfd.hpp>
+#include <raylib.h>
+
+struct SceneCamera
+{
+    Camera3D raylib;
+
+    // 3D spherical coordinates
+    f32 azimuthal_angle;
+    f32 polar_angle;
+    f32 rho;
+
+    SceneCamera()
+    {
+        raylib = {
+            .target     = {0.0f, 0.0f, 0.0f},
+            .up         = {0.0f, 1.0f, 0.0f},
+            .fovy       = 45.0f,
+            .projection = CAMERA_PERSPECTIVE,
+        };
+
+        azimuthal_angle = 0.0f;
+        polar_angle = 0.0f;
+        rho = 10.0f;
+    }
+
+    void update(f32 dt)
+    {
+        if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE))
+        {
+            auto delta = GetMouseDelta();
+            azimuthal_angle += delta.x * dt;
+            polar_angle += delta.y * dt;
+        }
+
+        f32 scroll = GetMouseWheelMove();
+        rho += -scroll * 3000 * dt;
+
+        // Convert spherical coordinates to cartesian coordinates
+        f32 x = rho * sin(polar_angle) * cos(azimuthal_angle);
+        f32 y = rho * sin(polar_angle) * sin(azimuthal_angle);
+        f32 z = rho * cos(polar_angle);
+
+        raylib.position = {x, z, y};
+    }
+};
 
 i32 main()
 {
@@ -18,32 +62,28 @@ i32 main()
 
     ui::Context ui{};
 
-    Camera3D camera{
-        .position   = {-10.0f, 15.0f, -10.0f},
-        .target     = {0.0f, 0.0f, 0.0f},
-        .up         = {0.0f, 1.0f, 0.0f},
-        .fovy       = 45.0f,
-        .projection = CAMERA_PERSPECTIVE,
-    };
-
+    SceneCamera camera;
     std::vector<Emitter> emitters;
 
     while (!WindowShouldClose())
     {
         global.update_window_size(GetScreenWidth(), GetScreenHeight());
         f32 dt = GetFrameTime();
-        
-        UpdateCamera(&camera, CAMERA_ORBITAL);
-        for (auto &e : emitters) {
-            e.update(dt);            
+
+        camera.update(dt);
+
+        for (auto &e : emitters)
+        {
+            e.update(dt);
         }
 
         BeginTextureMode(ui.scene);
         ClearBackground(BLACK);
-        BeginMode3D(camera);
+        BeginMode3D(camera.raylib);
         DrawGrid(100, 1.0f);
-        for (const auto &e : emitters) {
-            e.draw(camera);            
+        for (const auto &e : emitters)
+        {
+            e.draw(camera.raylib);
         }
 
         EndMode3D();

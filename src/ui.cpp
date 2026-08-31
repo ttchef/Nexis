@@ -109,14 +109,28 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
 
                 if (NFD::OpenDialog(out_path, filters, ARRAY_COUNT(filters)) != NFD_OKAY)
                 {
-                    std::cout << "Filedialog error: %s" << NFD::GetError() << std::endl;
+                    std::cout << "Filedialog error: " << NFD::GetError() << std::endl;
                 }
                 else
                 {
+                    if (e.texture && e.texture->id != 0)
+                    {
+                        UnloadTexture(e.texture.value());
+                    }
                     e.texture_path = out_path.get();
                     auto image = LoadImage(e.texture_path.c_str());
                     e.texture = LoadTextureFromImage(image);
                     UnloadImage(image);
+                }
+            }
+            if (e.texture)
+            {
+                ImGui::SameLine();
+                if (ImGui::Button("Unload Texture"))
+                {
+                    UnloadTexture(e.texture.value());
+                    e.texture = std::optional<Texture2D>{};
+                    e.texture_path.clear();
                 }
             }
             ImGui::SameLine();
