@@ -47,6 +47,9 @@ struct SceneCamera
         f32 y = rho * sin(polar_angle) * sin(azimuthal_angle);
         f32 z = rho * cos(polar_angle);
 
+        rho = std::max(rho, 0.1f);
+
+        // Physics coordinate system
         raylib.position = {x, z, y};
     }
 };
@@ -62,6 +65,7 @@ i32 main()
 
     // TODO: Absolute paths
     Shader grid_shader = LoadShader("src/shaders/grid.vert", "src/shaders/grid.frag");
+    int camera_pos_loc = GetShaderLocation(grid_shader, "camera_pos");
     
     ui::Context ui{};
 
@@ -74,6 +78,7 @@ i32 main()
         f32 dt = GetFrameTime();
 
         camera.update(dt);
+        SetShaderValue(grid_shader, camera_pos_loc, &camera.raylib.position, SHADER_UNIFORM_VEC3);
 
         for (auto &e : emitters)
         {
@@ -85,7 +90,7 @@ i32 main()
         BeginMode3D(camera.raylib);
 
         BeginShaderMode(grid_shader);
-        DrawPlane({0.0f, 0.0f, 0.0f}, {10.0f, 10.0f}, RED);
+        DrawPlane({0.0f, 0.0f, 0.0f}, {100.0f, 100.0f}, RED);
         EndShaderMode();
         
         for (const auto &e : emitters)
