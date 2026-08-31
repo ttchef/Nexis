@@ -24,11 +24,13 @@ FetchContent_MakeAvailable(raylib clay)
 
 set(SRC_FILES
     src/main.cpp
-    
+    src/ui.cpp
 )
 
-add_executable(${PROJECT_NAME} src/main.cpp)
+add_executable(${PROJECT_NAME} ${SRC_FILES})
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
 target_link_libraries(${PROJECT_NAME} raylib)
 # System include to suppress warnings
 target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${clay_SOURCE_DIR})
+# Normal include
+target_include_directories(${PROJECT_NAME} PRIVATE src)
