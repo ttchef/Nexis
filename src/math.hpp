@@ -3,7 +3,11 @@
 
 #include <types.hpp>
 
-// NOTE: Will probaly be removed later anyways
+// I have no idea where max is and i dont care right now all i know
+// is that this provides max
+#include <algorithm>
+
+// Will probaly be removed later anyways
 #include <raylib.h>
 
 static inline f32 lerp(f32 a, f32 b, f32 t)
@@ -27,6 +31,11 @@ struct Vec2
 
     Vec2 operator+(const Vec2 other) const {
         return Vec2(x + other.x, y + other.y);
+    }
+
+    void max(f32 max) {
+        x = std::max(x, max);
+        y = std::max(y, max);
     }
 };
 

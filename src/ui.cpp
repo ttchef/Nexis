@@ -35,8 +35,12 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
         show_options_menu = true;
     }
 
-    for (auto &e : emitters)
+    for (u32 i = 0; i < emitters.size(); i++)
     {
+        auto &e = emitters[i];
+
+        ImGui::PushID(i);
+
         if (ImGui::CollapsingHeader(e.name.c_str()))
         {
             ImGui::SetNextItemWidth(100.0f);
@@ -49,6 +53,14 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
 
             ImGui::ColorEdit4("Birth Color", static_cast<f32 *>(&e.birth_color.x));
             ImGui::ColorEdit4("Death Color", static_cast<f32 *>(&e.death_color.x));
+
+            ImGui::SetNextItemWidth(100.0f);
+            ImGui::DragFloat("Birth Size", &e.birth_size, 0.005f);
+            e.birth_size = std::max(e.birth_size, 0.0f);
+
+            ImGui::SetNextItemWidth(100.0f);
+            ImGui::DragFloat("death Size", &e.death_size, 0.005f);
+            e.death_size = std::max(e.death_size, 0.0f);
 
             const char *current = "Unkown";
 
@@ -75,19 +87,16 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
                     ImGui::Text("Position");
                     ImGui::SameLine();
                     ImGui::SetNextItemWidth(100.0f);
-                    ImGui::DragFloat("##emitter_shape_rectangle_drag_float_pos_x", &value.pos.x, 0.05f);
-                    ImGui::SameLine();
-                    ImGui::SetNextItemWidth(100.0f);
-                    ImGui::DragFloat("##emitter_shape_rectangle_drag_float_pos_y", &value.pos.y, 0.05f);
+                    ImGui::DragFloat2("##emitter_shape_rectangle_drag_float_pos", &value.pos.x, 0.05f);
                     ImGui::Text("Size    ");
                     ImGui::SameLine();
                     ImGui::SetNextItemWidth(100.0f);
-                    ImGui::DragFloat("##emitter_shape_rectangle_drag_float_size_x", &value.size.x, 0.05f);
-                    ImGui::SameLine();
-                    ImGui::SetNextItemWidth(100.0f);
-                    ImGui::DragFloat("##emitter_shape_rectangle_drag_float_size_y", &value.size.y, 0.05f);
+                    ImGui::DragFloat2("##emitter_shape_rectangle_drag_float_size", &value.size.x, 0.05f);
+
+                    value.size.max(0.0f);
                 } }, e.shape);
         }
+        ImGui::PopID();
     }
 
     ImGui::End();

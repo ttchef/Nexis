@@ -21,6 +21,8 @@ struct Particle
     Vec3 acc;
     f32  lifetime;
     f32  start_lifetime;
+    f32 birth_size;
+    f32 death_size;
 
     void update(f32 dt)
     {
@@ -34,8 +36,11 @@ struct Particle
 
     void draw() const
     {
-        auto color = death_color.lerp(birth_color, lifetime / start_lifetime);
-        DrawSphere({pos.x, pos.y, pos.z}, 0.1f, color.raylib_color());
+        f32 t = 1.0f - (lifetime / start_lifetime);
+
+        f32 size = lerp(birth_size, death_size, t);
+        auto color = birth_color.lerp(death_color, t);
+        DrawSphere({pos.x, pos.y, pos.z}, size, color.raylib_color());
     }
 };
 
@@ -58,6 +63,9 @@ struct Emitter
 
     Vec4 birth_color = {1.0f, 1.0f, 1.0f, 1.0f};
     Vec4 death_color = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    f32 birth_size = 0.2f;
+    f32 death_size = 0.2f;
 
     Emitter() {}
     Emitter(std::string name) : name(name) {}
@@ -92,6 +100,8 @@ struct Emitter
                 .vel      = {0.0f, 1.0f, 0.0f},
                 .lifetime = lifetime,
                 .start_lifetime = lifetime,
+                .birth_size = birth_size,
+                .death_size = death_size,
             });
         }
 
