@@ -2,6 +2,9 @@
 
 #include <types.hpp>
 #include <globals.hpp>
+#include <particle_system.hpp>
+
+#include <vector>
 
 #include <raylib.h>
 
@@ -11,11 +14,14 @@ namespace ui
 struct Context
 {
     RenderTexture2D scene;
+
+    bool show_options_menu;
+    Emitter add_emitter;
     
     Context();
     ~Context();
 
-    void draw();
+    void compute(std::vector<Emitter> &emitters);
 };
 
 } // namespace ui

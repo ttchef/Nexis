@@ -11,6 +11,7 @@ i32 main()
     SetTraceLogLevel(LOG_WARNING);
     SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE);
     InitWindow(global.window_width, global.window_height, "Nexis");
+    SetExitKey(KEY_NULL);
 
     ui::Context ui{};
 
@@ -22,7 +23,7 @@ i32 main()
         .projection = CAMERA_PERSPECTIVE,
     };
 
-    Emitter emitter{3.0f};
+    std::vector<Emitter> emitters;
 
     while (!WindowShouldClose())
     {
@@ -30,20 +31,24 @@ i32 main()
         f32 dt = GetFrameTime();
         
         UpdateCamera(&camera, CAMERA_ORBITAL);
-        emitter.update(dt);
+        for (auto &e : emitters) {
+            e.update(dt);            
+        }
 
         BeginTextureMode(ui.scene);
         ClearBackground(BLACK);
         BeginMode3D(camera);
         DrawGrid(100, 1.0f);
-        emitter.draw();
+        for (const auto &e : emitters) {
+            e.draw();            
+        }
 
         EndMode3D();
         EndTextureMode();
 
         BeginDrawing();
         ClearBackground(BLACK);
-        ui.draw();
+        ui.compute(emitters);
         EndDrawing();
     }
     CloseWindow();
