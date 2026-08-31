@@ -3,6 +3,14 @@
 
 #include <types.hpp>
 
+// NOTE: Will probaly be removed later anyways
+#include <raylib.h>
+
+static inline f32 lerp(f32 a, f32 b, f32 t)
+{
+    return t * b + (1.0f - t) * a;
+}
+
 struct Vec2
 {
     f32 x;
@@ -52,5 +60,21 @@ struct Vec3
 
     Vec3 operator+(const Vec3 other) const {
         return Vec3(x + other.x, y + other.y, z + other.z);
+    }
+};
+
+struct Vec4
+{
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 w;
+
+    Vec4 lerp(const Vec4 &other, f32 t) const {
+        return Vec4(::lerp(x, other.x, t), ::lerp(y, other.y, t), ::lerp(z, other.z, t), ::lerp(w, other.w, t));
+    }
+
+    Color raylib_color() const {
+        return {static_cast<u8>(x * 255), static_cast<u8>(y  * 255), static_cast<u8>(z * 255), static_cast<u8>(w * 255)};
     }
 };

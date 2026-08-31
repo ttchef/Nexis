@@ -1,23 +1,26 @@
 
 #pragma once
 
+#include <globals.hpp>
 #include <math.hpp>
 #include <types.hpp>
-#include <globals.hpp>
 
 #include <algorithm>
 #include <string>
-#include <vector>
 #include <variant>
+#include <vector>
 
 #include <raylib.h>
 
 struct Particle
 {
+    Vec4 birth_color;
+    Vec4 death_color;
     Vec3 pos;
     Vec3 vel;
     Vec3 acc;
     f32  lifetime;
+    f32  start_lifetime;
 
     void update(f32 dt)
     {
@@ -31,14 +34,15 @@ struct Particle
 
     void draw() const
     {
-        DrawSphere((Vector3){pos.x, pos.y, pos.z}, 0.1f, WHITE);
+        auto color = death_color.lerp(birth_color, lifetime / start_lifetime);
+        DrawSphere({pos.x, pos.y, pos.z}, 0.1f, color.raylib_color());
     }
 };
 
 struct EmitterShapeRectangle
 {
     Vec2 pos;
-    Vec2 size;  
+    Vec2 size;
 };
 
 struct Emitter
@@ -50,7 +54,10 @@ struct Emitter
     f32 lifetime = 1.0f;
 
     std::variant<EmitterShapeRectangle> shape = {EmitterShapeRectangle{}};
-    bool render_shape;
+    bool                                render_shape;
+
+    Vec4 birth_color = {1.0f, 1.0f, 1.0f, 1.0f};
+    Vec4 death_color = {1.0f, 1.0f, 1.0f, 1.0f};
 
     Emitter() {}
     Emitter(std::string name) : name(name) {}
@@ -59,13 +66,16 @@ struct Emitter
     {
         elapsed_time += dt;
 
-        if (elapsed_time * speed > 1.0f)
+        const f32 interval = 1.0f / speed;
+
+        while (elapsed_time >= interval)
         {
-            elapsed_time = 0.0f;
+            elapsed_time -= interval;
 
             Vec3 pos{};
-            
-            std::visit([&](const auto &value){
+
+            std::visit([&](const auto &value)
+                       {
                            using T = std::decay_t<decltype(value)>;
 
                            if constexpr (std::is_same_v<T, EmitterShapeRectangle>)
@@ -73,13 +83,15 @@ struct Emitter
                                 Vec2 min = value.pos - value.size * 0.5f;
                                 Vec2 max = value.pos + value.size * 0.5f;
                                 pos = {global.random(min.x, max.x), 0.0f, global.random(min.y, max.y)};     
-                           }
-                       }, shape);
+                           } }, shape);
 
             particles.push_back({
-                .pos = pos,
+                .birth_color = birth_color,
+                .death_color = death_color,
+                .pos      = pos,
                 .vel      = {0.0f, 1.0f, 0.0f},
                 .lifetime = lifetime,
+                .start_lifetime = lifetime,
             });
         }
 
@@ -97,14 +109,14 @@ struct Emitter
     {
         if (render_shape)
         {
-            std::visit([](auto &value){
+            std::visit([](auto &value)
+                       {
                         using T = std::decay_t<decltype(value)>;
 
                         if constexpr (std::is_same_v<T, EmitterShapeRectangle>)
                         {
                             DrawCubeWires({value.pos.x, 0.0f, value.pos.y}, value.size.x, 0.1f, value.size.y, YELLOW);
-                        }
-                       }, shape);
+                        } }, shape);
         }
         for (const auto &p : particles)
         {
@@ -113,5 +125,5 @@ struct Emitter
     }
 
   private:
-    f32 elapsed_time;
+    f32 elapsed_time = 0.0f;
 };

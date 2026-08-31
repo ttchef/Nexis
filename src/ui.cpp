@@ -39,11 +39,16 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
     {
         if (ImGui::CollapsingHeader(e.name.c_str()))
         {
+            ImGui::SetNextItemWidth(100.0f);
             ImGui::DragFloat("Emitter speed", &e.speed, 0.05f);
             e.speed = std::max(e.speed, 0.0f);
 
+            ImGui::SetNextItemWidth(100.0f);
             ImGui::DragFloat("Particle lifetime", &e.lifetime, 0.05f);
             e.lifetime = std::max(e.lifetime, 0.0f);
+
+            ImGui::ColorEdit4("Birth Color", static_cast<f32 *>(&e.birth_color.x));
+            ImGui::ColorEdit4("Death Color", static_cast<f32 *>(&e.death_color.x));
 
             const char *current = "Unkown";
 
@@ -62,7 +67,8 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
             }
             ImGui::Checkbox("Render Emitter Shape", &e.render_shape);
 
-            std::visit([](auto &value){
+            std::visit([](auto &value)
+                       {
                 using T = std::decay_t<decltype(value)>;
 
                 if constexpr (std::is_same_v<T, EmitterShapeRectangle>) {
@@ -73,15 +79,14 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
                     ImGui::SameLine();
                     ImGui::SetNextItemWidth(100.0f);
                     ImGui::DragFloat("##emitter_shape_rectangle_drag_float_pos_y", &value.pos.y, 0.05f);
-                    ImGui::Text("Size");
+                    ImGui::Text("Size    ");
                     ImGui::SameLine();
                     ImGui::SetNextItemWidth(100.0f);
                     ImGui::DragFloat("##emitter_shape_rectangle_drag_float_size_x", &value.size.x, 0.05f);
                     ImGui::SameLine();
                     ImGui::SetNextItemWidth(100.0f);
                     ImGui::DragFloat("##emitter_shape_rectangle_drag_float_size_y", &value.size.y, 0.05f);
-                }
-            }, e.shape);
+                } }, e.shape);
         }
     }
 
