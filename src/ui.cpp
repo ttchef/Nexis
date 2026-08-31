@@ -104,7 +104,7 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
             if (ImGui::Button("Load Texture")) {
                 NFD::UniquePathN out_path;
                 nfdu8filteritem_t filters[] = {
-                    { "Pictues", "png,jpg,jpeg"},
+                    { "Pictues", "png"},
                 };
 
                 if (NFD::OpenDialog(out_path, filters, ARRAY_COUNT(filters)) != NFD_OKAY)

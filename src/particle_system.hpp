@@ -37,7 +37,7 @@ struct Particle
 
     void draw(const Camera3D &camera) const
     {
-        f32 t = 1.0f - (lifetime / start_lifetime);
+        f32 t = std::clamp(1.0f - (lifetime / start_lifetime), 0.0f, 1.0f);
 
         f32 size = lerp(birth_size, death_size, t);
         if (!texture)
