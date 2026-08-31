@@ -40,7 +40,7 @@ struct SceneCamera
         }
 
         f32 scroll = GetMouseWheelMove();
-        rho += -scroll * 3000 * dt;
+        rho += -scroll * 300 * dt;
 
         // Convert spherical coordinates to cartesian coordinates
         f32 x = rho * sin(polar_angle) * cos(azimuthal_angle);
@@ -60,6 +60,9 @@ i32 main()
     InitWindow(global.window_width, global.window_height, "Nexis");
     SetExitKey(KEY_NULL);
 
+    // TODO: Absolute paths
+    Shader grid_shader = LoadShader("src/shaders/grid.vert", "src/shaders/grid.frag");
+    
     ui::Context ui{};
 
     SceneCamera camera;
@@ -80,7 +83,11 @@ i32 main()
         BeginTextureMode(ui.scene);
         ClearBackground(BLACK);
         BeginMode3D(camera.raylib);
-        DrawGrid(100, 1.0f);
+
+        BeginShaderMode(grid_shader);
+        DrawPlane({0.0f, 0.0f, 0.0f}, {10.0f, 10.0f}, RED);
+        EndShaderMode();
+        
         for (const auto &e : emitters)
         {
             e.draw(camera.raylib);
