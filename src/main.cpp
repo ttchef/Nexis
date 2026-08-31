@@ -2,6 +2,7 @@
 #include <globals.hpp>
 #include <types.hpp>
 #include <ui.hpp>
+#include <particle_system.hpp>
 
 #include <raylib.h>
 
@@ -21,17 +22,22 @@ i32 main()
         .projection = CAMERA_PERSPECTIVE,
     };
 
+    Emitter emitter{3.0f};
+
     while (!WindowShouldClose())
     {
         global.update_window_size(GetScreenWidth(), GetScreenHeight());
+        f32 dt = GetFrameTime();
         
         UpdateCamera(&camera, CAMERA_ORBITAL);
+        emitter.update(dt);
 
         BeginTextureMode(ui.scene);
         ClearBackground(BLACK);
         BeginMode3D(camera);
         DrawGrid(100, 1.0f);
-        DrawCube({0.0f, 0.0f, 0.0f}, 5.0f, 5.0f, 5.0f, WHITE);
+        emitter.draw();
+
         EndMode3D();
         EndTextureMode();
 
