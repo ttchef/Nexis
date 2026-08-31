@@ -1,0 +1,3 @@
+build/
+# Used for a faster building process while developing (wrapping cmake commands)
+Makefile
