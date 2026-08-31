@@ -3,6 +3,7 @@
 
 #include <types.hpp>
 
+#include <cfloat>
 // I have no idea where max is and i dont care right now all i know
 // is that this provides max
 #include <algorithm>
@@ -69,6 +70,30 @@ struct Vec3
 
     Vec3 operator+(const Vec3 other) const {
         return Vec3(x + other.x, y + other.y, z + other.z);
+    }
+
+    Vec3 operator/(const f32 other) const {
+        return Vec3(x / other, y / other, z / other);
+    }
+
+    f32 lensq() const {
+        return x * x + y * y + z * z; 
+    }
+
+    f32 len() const {
+        auto sq = lensq();
+        if (sq < FLT_EPSILON) {
+            return 0.0f;
+        }
+        return sq;
+    }
+
+    Vec3 norm() const {
+        auto l = len();
+        if (l < FLT_EPSILON) {
+            return Vec3::zero();
+        }
+        return Vec3(x, y, z) / l;
     }
 };
 

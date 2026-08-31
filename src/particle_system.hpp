@@ -14,15 +14,16 @@
 
 struct Particle
 {
-    Vec4 birth_color;
-    Vec4 death_color;
-    Vec3 pos;
-    Vec3 vel;
-    Vec3 acc;
-    f32  lifetime;
-    f32  start_lifetime;
-    f32 birth_size;
-    f32 death_size;
+    Vec4       birth_color;
+    Vec4       death_color;
+    Vec3       pos;
+    Vec3       vel;
+    Vec3       acc;
+    f32        lifetime;
+    f32        start_lifetime;
+    f32        birth_size;
+    f32        death_size;
+    Texture2D *texture = nullptr;
 
     void update(f32 dt)
     {
@@ -34,13 +35,20 @@ struct Particle
         lifetime -= dt;
     }
 
-    void draw() const
+    void draw(const Camera3D &camera) const
     {
         f32 t = 1.0f - (lifetime / start_lifetime);
 
         f32 size = lerp(birth_size, death_size, t);
-        auto color = birth_color.lerp(death_color, t);
-        DrawSphere({pos.x, pos.y, pos.z}, size, color.raylib_color());
+        if (!texture)
+        {
+            auto color = birth_color.lerp(death_color, t);
+            DrawSphere({pos.x, pos.y, pos.z}, size, color.raylib_color());
+        }
+        else
+        {
+            DrawBillboard(camera, *texture, {pos.x, pos.y, pos.z}, size, WHITE);
+        }
     }
 };
 
@@ -66,6 +74,11 @@ struct Emitter
 
     f32 birth_size = 0.2f;
     f32 death_size = 0.2f;
+
+    Vec3 direction = {0.0f, 1.0f, 0.0f};
+
+    std::string              texture_path{};
+    std::optional<Texture2D> texture{};
 
     Emitter() {}
     Emitter(std::string name) : name(name) {}
@@ -94,14 +107,15 @@ struct Emitter
                            } }, shape);
 
             particles.push_back({
-                .birth_color = birth_color,
-                .death_color = death_color,
-                .pos      = pos,
-                .vel      = {0.0f, 1.0f, 0.0f},
-                .lifetime = lifetime,
+                .birth_color    = birth_color,
+                .death_color    = death_color,
+                .pos            = pos,
+                .vel            = direction,
+                .lifetime       = lifetime,
                 .start_lifetime = lifetime,
-                .birth_size = birth_size,
-                .death_size = death_size,
+                .birth_size     = birth_size,
+                .death_size     = death_size,
+                .texture        = texture ? &texture.value() : nullptr,
             });
         }
 
@@ -115,7 +129,7 @@ struct Emitter
         }
     }
 
-    void draw() const
+    void draw(const Camera3D &camera) const
     {
         if (render_shape)
         {
@@ -130,7 +144,7 @@ struct Emitter
         }
         for (const auto &p : particles)
         {
-            p.draw();
+            p.draw(camera);
         }
     }
 

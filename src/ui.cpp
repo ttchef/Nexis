@@ -5,6 +5,9 @@
 #include <misc/cpp/imgui_stdlib.cpp>
 #include <misc/cpp/imgui_stdlib.h>
 #include <rlImGui.h>
+#include <nfd.hpp>
+
+#include <iostream>
 
 ui::Context::Context()
 {
@@ -59,8 +62,10 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
             e.birth_size = std::max(e.birth_size, 0.0f);
 
             ImGui::SetNextItemWidth(100.0f);
-            ImGui::DragFloat("death Size", &e.death_size, 0.005f);
+            ImGui::DragFloat("Death Size", &e.death_size, 0.005f);
             e.death_size = std::max(e.death_size, 0.0f);
+
+            ImGui::DragFloat3("Direction", &e.direction.x, 0.05f);
 
             const char *current = "Unkown";
 
@@ -95,6 +100,27 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
 
                     value.size.max(0.0f);
                 } }, e.shape);
+
+            if (ImGui::Button("Load Texture")) {
+                NFD::UniquePathN out_path;
+                nfdu8filteritem_t filters[] = {
+                    { "Pictues", "png,jpg,jpeg"},
+                };
+
+                if (NFD::OpenDialog(out_path, filters, ARRAY_COUNT(filters)) != NFD_OKAY)
+                {
+                    std::cout << "Filedialog error: %s" << NFD::GetError() << std::endl;
+                }
+                else
+                {
+                    e.texture_path = out_path.get();
+                    auto image = LoadImage(e.texture_path.c_str());
+                    e.texture = LoadTextureFromImage(image);
+                    UnloadImage(image);
+                }
+            }
+            ImGui::SameLine();
+            ImGui::Text("Path: %s", e.texture_path.c_str());
         }
         ImGui::PopID();
     }

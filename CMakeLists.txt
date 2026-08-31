@@ -19,13 +19,22 @@ FetchContent_Declare(
     GIT_TAG fd13a1e8923a0a7077b404fc36fd063b25a0c0b5
 )
 
+# rlImGui
 FetchContent_Declare(
     rlimgui
     GIT_REPOSITORY https://github.com/raylib-extras/rlImGui.git
     GIT_TAG Raylib_6_0
 )
 
-FetchContent_MakeAvailable(raylib imgui rlimgui)
+# NativeFileDialog
+FetchContent_Declare(
+    nfd
+    GIT_REPOSITORY https://github.com/btzy/nativefiledialog-extended.git
+    # v1.3
+    GIT_TAG fc168e8605bfa51aaec22ab0c4e46b9de665a437
+)
+
+FetchContent_MakeAvailable(raylib imgui rlimgui nfd)
 
 add_library(imgui STATIC
     ${imgui_SOURCE_DIR}/imgui.cpp
@@ -60,5 +69,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     raylib
     imgui
     rlimgui
+    nfd
 )
-target_include_directories(${PROJECT_NAME} PRIVATE src)
+target_include_directories(${PROJECT_NAME} PRIVATE ${nfd_SOURCE_DIR}/src/include src)

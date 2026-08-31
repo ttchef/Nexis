@@ -5,9 +5,12 @@
 #include <particle_system.hpp>
 
 #include <raylib.h>
+#include <nfd.hpp>
 
 i32 main()
 {
+    NFD::Init();
+
     SetTraceLogLevel(LOG_WARNING);
     SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE);
     InitWindow(global.window_width, global.window_height, "Nexis");
@@ -40,7 +43,7 @@ i32 main()
         BeginMode3D(camera);
         DrawGrid(100, 1.0f);
         for (const auto &e : emitters) {
-            e.draw();            
+            e.draw(camera);            
         }
 
         EndMode3D();
@@ -52,5 +55,7 @@ i32 main()
         EndDrawing();
     }
     CloseWindow();
+
+    NFD::Quit();
     return 0;
 }
