@@ -11,16 +11,42 @@ FetchContent_Declare(
     GIT_TAG dbc56a87da87d973a9c5baa4e7438a9d20121d28
 )
 
-# Clay
+# ImGui
 FetchContent_Declare(
-    clay
-    GIT_REPOSITORY https://github.com/nicbarker/clay.git
-    # 0.14 Release
-    GIT_TAG b25a31c1a152915cd7dd6796e6592273e5a10aac
+    imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    # Docking branch
+    GIT_TAG fd13a1e8923a0a7077b404fc36fd063b25a0c0b5
 )
-set(CLAY_INCLUDE_ALL_EXAMPLES OFF CACHE BOOL "" FORCE)
 
-FetchContent_MakeAvailable(raylib clay)
+FetchContent_Declare(
+    rlimgui
+    GIT_REPOSITORY https://github.com/raylib-extras/rlImGui.git
+    GIT_TAG Raylib_6_0
+)
+
+FetchContent_MakeAvailable(raylib imgui rlimgui)
+
+add_library(imgui STATIC
+    ${imgui_SOURCE_DIR}/imgui.cpp
+    ${imgui_SOURCE_DIR}/imgui_draw.cpp
+    ${imgui_SOURCE_DIR}/imgui_tables.cpp
+    ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+)
+
+add_library(rlimgui STATIC
+    ${rlimgui_SOURCE_DIR}/rlImGui.cpp
+)
+
+target_include_directories(rlimgui PUBLIC
+    ${rlimgui_SOURCE_DIR}
+    ${imgui_SOURCE_DIR}
+)
+
+target_link_libraries(rlimgui PUBLIC
+    raylib
+    imgui
+)
 
 set(SRC_FILES
     src/main.cpp
@@ -29,8 +55,9 @@ set(SRC_FILES
 
 add_executable(${PROJECT_NAME} ${SRC_FILES})
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
-target_link_libraries(${PROJECT_NAME} raylib)
-# System include to suppress warnings
-target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${clay_SOURCE_DIR})
-# Normal include
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    raylib
+    imgui
+    rlimgui
+)
 target_include_directories(${PROJECT_NAME} PRIVATE src)

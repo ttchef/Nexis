@@ -1,36 +1,33 @@
 
-#include <cstdint>
-
-#define CLAY_IMPLEMENTATION
-#include <clay.h>
-#include <renderers/raylib/clay_renderer_raylib.c>
-
+#include <types.hpp>
 #include <ui.hpp>
 
-std::int32_t main() {
-	constexpr std::uint32_t start_width = 800;
-	constexpr std::uint32_t start_height = 600;
-	
-	SetTraceLogLevel(LOG_WARNING);
-	Clay_Raylib_Initialize(start_width, start_height, "Nexis", FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE);
+#include <raylib.h>
 
-	Font fonts[] = {
-		// TODO: Absolite path
-		LoadFontEx("assets/fonts/AdwaitaSans-Regular.ttf", 20, nullptr, 0),	
-	};
+i32 main()
+{
+    constexpr u32 start_width  = 800;
+    constexpr u32 start_height = 600;
 
-	ui::Context ui{start_width, start_height};
+    SetTraceLogLevel(LOG_WARNING);
+    SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE);
+    InitWindow(start_width, start_height, "Nexis");
 
-	while (!WindowShouldClose()) {
-		auto ui_commands = ui.compute_layout();
-		
-		BeginDrawing();
-		ClearBackground(BLACK);
+    RenderTexture2D texture = LoadRenderTexture(start_width, start_height);
 
-		Clay_Raylib_Render(ui_commands, fonts);
-		
-		EndDrawing();
-	}
-	Clay_Raylib_Close();
-	return 0;
+    ui::Context ui{};
+
+    while (!WindowShouldClose())
+    {
+        BeginTextureMode(texture);
+        DrawCircle(10, 10, 25, WHITE);
+        EndTextureMode();
+
+        BeginDrawing();
+        ClearBackground(BLACK);
+        ui.draw(texture.texture);
+        EndDrawing();
+    }
+    CloseWindow();
+    return 0;
 }

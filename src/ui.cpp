@@ -1,20 +1,44 @@
 
 #include <ui.hpp>
-#include <cstdint>
-#include <iostream>
 
-void HandleClayErrors(Clay_ErrorData errorData) {
-    std::cout << "[CLAY ERROR]" << errorData.errorText.chars << std::endl;
+#include <imgui.h>
+#include <rlImGui.h>
+
+ui::Context::Context() {
+    rlImGuiSetup(true);
+
+    ImGuiIO &io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;	
 }
 
-ui::Context::Context(float width, float height) {
-	std::uint64_t totalMemorySize = Clay_MinMemorySize();
-    this->arena = Clay_CreateArenaWithCapacityAndMemory(totalMemorySize, malloc(totalMemorySize));
-    Clay_Initialize(arena, { .width = width, .height = height }, (Clay_ErrorHandler) { HandleClayErrors });
+ui::Context::~Context() {
+	rlImGuiShutdown();
 }
 
-Clay_RenderCommandArray ui::Context::compute_layout() {
-	Clay_BeginLayout();
+void ui::Context::draw(Texture2D scene) {
+        rlImGuiBegin();
 
-	return Clay_EndLayout();
+		ImGui::DockSpaceOverViewport();
+
+        ImGui::Begin("Nexis");
+
+        ImGui::Text("Hello from Dear ImGui!");
+
+        if (ImGui::Button("Click me"))
+        {
+            // Do something
+        }
+
+        ImVec2 size = ImGui::GetContentRegionAvail();
+
+        ImGui::Image(
+            (ImTextureID)(uintptr_t)scene.id,
+            size,
+            ImVec2(0, 1),
+            ImVec2(1, 0));
+
+        ImGui::End();
+
+        rlImGuiEnd();
 }
+

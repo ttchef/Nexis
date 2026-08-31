@@ -7,5 +7,6 @@ cmake --build build
 ```
 
 # Dependencies
-  - [Clay](https://github.com/nicbarker/clay.git)
+  - [rlImGui](https://github.com/raylib-extras/rlImGui.git)
+  - [ImGui](https://github.com/ocornut/imgui.git)
   - [Raylib](https://github.com/raysan5/raylib.git)
