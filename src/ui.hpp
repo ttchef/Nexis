@@ -1,16 +1,21 @@
 #pragma once
 
 #include <types.hpp>
+#include <globals.hpp>
 
 #include <raylib.h>
 
-namespace ui {
+namespace ui
+{
 
-struct Context {
-	Context();
-	~Context();
+struct Context
+{
+    RenderTexture2D scene;
+    
+    Context();
+    ~Context();
 
-	void draw(Texture2D scene);	
+    void draw();
 };
-	
+
 } // namespace ui

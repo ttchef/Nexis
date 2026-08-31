@@ -1,4 +1,5 @@
 
+#include <globals.hpp>
 #include <types.hpp>
 #include <ui.hpp>
 
@@ -6,26 +7,37 @@
 
 i32 main()
 {
-    constexpr u32 start_width  = 800;
-    constexpr u32 start_height = 600;
-
     SetTraceLogLevel(LOG_WARNING);
     SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE);
-    InitWindow(start_width, start_height, "Nexis");
-
-    RenderTexture2D texture = LoadRenderTexture(start_width, start_height);
+    InitWindow(global.window_width, global.window_height, "Nexis");
 
     ui::Context ui{};
 
+    Camera3D camera{
+        .position   = {-10.0f, 15.0f, -10.0f},
+        .target     = {0.0f, 0.0f, 0.0f},
+        .up         = {0.0f, 1.0f, 0.0f},
+        .fovy       = 45.0f,
+        .projection = CAMERA_PERSPECTIVE,
+    };
+
     while (!WindowShouldClose())
     {
-        BeginTextureMode(texture);
-        DrawCircle(10, 10, 25, WHITE);
+        global.update_window_size(GetScreenWidth(), GetScreenHeight());
+        
+        UpdateCamera(&camera, CAMERA_ORBITAL);
+
+        BeginTextureMode(ui.scene);
+        ClearBackground(BLACK);
+        BeginMode3D(camera);
+        DrawGrid(100, 1.0f);
+        DrawCube({0.0f, 0.0f, 0.0f}, 5.0f, 5.0f, 5.0f, WHITE);
+        EndMode3D();
         EndTextureMode();
 
         BeginDrawing();
         ClearBackground(BLACK);
-        ui.draw(texture.texture);
+        ui.draw();
         EndDrawing();
     }
     CloseWindow();

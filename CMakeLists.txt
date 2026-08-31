@@ -51,6 +51,7 @@ target_link_libraries(rlimgui PUBLIC
 set(SRC_FILES
     src/main.cpp
     src/ui.cpp
+    src/globals.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SRC_FILES})
