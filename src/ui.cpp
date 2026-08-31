@@ -2,8 +2,8 @@
 #include <ui.hpp>
 
 #include <imgui.h>
-#include <misc/cpp/imgui_stdlib.h>
 #include <misc/cpp/imgui_stdlib.cpp>
+#include <misc/cpp/imgui_stdlib.h>
 #include <rlImGui.h>
 
 ui::Context::Context()
@@ -13,7 +13,7 @@ ui::Context::Context()
     ImGuiIO &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-    scene = LoadRenderTexture(2560, 1440);
+    scene             = LoadRenderTexture(2560, 1440);
     show_options_menu = false;
 }
 
@@ -30,7 +30,8 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
 
     ImGui::Begin("Settings");
 
-    if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+    if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+    {
         show_options_menu = true;
     }
 
@@ -43,17 +44,58 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
 
             ImGui::DragFloat("Particle lifetime", &e.lifetime, 0.05f);
             e.lifetime = std::max(e.lifetime, 0.0f);
+
+            const char *current = "Unkown";
+
+            if (std::holds_alternative<EmitterShapeRectangle>(e.shape))
+            {
+                current = "Rectangle";
+            }
+            if (ImGui::BeginCombo("Emitter Shape", current))
+            {
+                if (ImGui::Selectable("Rectangle", std::holds_alternative<EmitterShapeRectangle>(e.shape)))
+                {
+                    e.shape = EmitterShapeRectangle{};
+                }
+
+                ImGui::EndCombo();
+            }
+            ImGui::Checkbox("Render Emitter Shape", &e.render_shape);
+
+            std::visit([](auto &value){
+                using T = std::decay_t<decltype(value)>;
+
+                if constexpr (std::is_same_v<T, EmitterShapeRectangle>) {
+                    ImGui::Text("Position");
+                    ImGui::SameLine();
+                    ImGui::SetNextItemWidth(100.0f);
+                    ImGui::DragFloat("##emitter_shape_rectangle_drag_float_pos_x", &value.pos.x, 0.05f);
+                    ImGui::SameLine();
+                    ImGui::SetNextItemWidth(100.0f);
+                    ImGui::DragFloat("##emitter_shape_rectangle_drag_float_pos_y", &value.pos.y, 0.05f);
+                    ImGui::Text("Size");
+                    ImGui::SameLine();
+                    ImGui::SetNextItemWidth(100.0f);
+                    ImGui::DragFloat("##emitter_shape_rectangle_drag_float_size_x", &value.size.x, 0.05f);
+                    ImGui::SameLine();
+                    ImGui::SetNextItemWidth(100.0f);
+                    ImGui::DragFloat("##emitter_shape_rectangle_drag_float_size_y", &value.size.y, 0.05f);
+                }
+            }, e.shape);
         }
     }
 
     ImGui::End();
 
-    if (show_options_menu) {
-        ImGui::Begin("Options", &show_options_menu);
+    if (show_options_menu)
+    {
+        ImGui::Begin("Options", &show_options_menu, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDocking);
 
-        if (ImGui::Button("Create Emitter")) {
+        if (ImGui::Button("Create Emitter") && !add_emitter.name.empty())
+        {
             emitters.push_back(add_emitter);
-            add_emitter = Emitter();
+            add_emitter       = Emitter();
+            show_options_menu = false;
         }
 
         ImGui::SameLine();

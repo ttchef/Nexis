@@ -3,10 +3,12 @@
 
 #include <math.hpp>
 #include <types.hpp>
+#include <globals.hpp>
 
 #include <algorithm>
 #include <string>
 #include <vector>
+#include <variant>
 
 #include <raylib.h>
 
@@ -33,13 +35,22 @@ struct Particle
     }
 };
 
+struct EmitterShapeRectangle
+{
+    Vec2 pos;
+    Vec2 size;  
+};
+
 struct Emitter
 {
     std::string           name;
     std::vector<Particle> particles;
     // particles per second
-    f32 speed    = 0.0f;
-    f32 lifetime = 0.0f;
+    f32 speed    = 2.0f;
+    f32 lifetime = 1.0f;
+
+    std::variant<EmitterShapeRectangle> shape = {EmitterShapeRectangle{}};
+    bool render_shape;
 
     Emitter() {}
     Emitter(std::string name) : name(name) {}
@@ -52,8 +63,21 @@ struct Emitter
         {
             elapsed_time = 0.0f;
 
+            Vec3 pos{};
+            
+            std::visit([&](const auto &value){
+                           using T = std::decay_t<decltype(value)>;
+
+                           if constexpr (std::is_same_v<T, EmitterShapeRectangle>)
+                           {
+                                Vec2 min = value.pos - value.size * 0.5f;
+                                Vec2 max = value.pos + value.size * 0.5f;
+                                pos = {global.random(min.x, max.x), 0.0f, global.random(min.y, max.y)};     
+                           }
+                       }, shape);
+
             particles.push_back({
-                .pos      = {0.0f, 0.0f, 0.0f},
+                .pos = pos,
                 .vel      = {0.0f, 1.0f, 0.0f},
                 .lifetime = lifetime,
             });
@@ -71,6 +95,17 @@ struct Emitter
 
     void draw() const
     {
+        if (render_shape)
+        {
+            std::visit([](auto &value){
+                        using T = std::decay_t<decltype(value)>;
+
+                        if constexpr (std::is_same_v<T, EmitterShapeRectangle>)
+                        {
+                            DrawCubeWires({value.pos.x, 0.0f, value.pos.y}, value.size.x, 0.1f, value.size.y, YELLOW);
+                        }
+                       }, shape);
+        }
         for (const auto &p : particles)
         {
             p.draw();

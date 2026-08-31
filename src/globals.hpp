@@ -1,11 +1,14 @@
 #pragma once
 
 #include <types.hpp>
+#include <random.hpp>
 
 struct Global
 {
     u32 window_width = 800;
     u32 window_height = 600;
+
+    Random random;
 
     // returns true if the size changed
     bool update_window_size(u32 width, u32 height)
