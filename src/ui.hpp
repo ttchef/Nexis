@@ -18,7 +18,7 @@ struct Context
     bool show_options_menu;
     Emitter add_emitter;
     
-    Context();
+    Context(f32 dpi_scale);
     ~Context();
 
     void compute(std::vector<Emitter> &emitters);
