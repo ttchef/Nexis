@@ -119,8 +119,8 @@ struct ForceGravity
 struct ForcePoint
 {
     Vec3 pos = {0.0f, 0.0f, 0.0f};
-    f32 strength;
-    f32 falloff_radius; // 0 = no falloff  
+    f32  strength;
+    f32  falloff_radius; // 0 = no falloff
 };
 
 using ForceType = std::variant<ForceGravity, ForcePoint>;
@@ -130,7 +130,7 @@ struct Force
     ForceType type;
     bool      enabled = true;
 
-    Vec3 compute(const Particle &p) const
+    Vec3 compute(Vec3 pos) const
     {
         if (!enabled)
         {
@@ -147,7 +147,7 @@ struct Force
             }
             else if constexpr (std::is_same_v<T, ForcePoint>)
             {
-                Vec3 to_point = value.pos - p.pos;
+                Vec3 to_point = value.pos - pos;
                 f32 dist = to_point.lensq();
                 if (dist < FLT_EPSILON)
                 {
@@ -158,8 +158,7 @@ struct Force
                 Vec3 dir = to_point / dist;
                 f32 falloff = value.falloff_radius > 0.0f ? std::clamp(1.0f - dist / value.falloff_radius, 0.0f, 1.0f) : 1.0f;
                 return dir * value.strength * falloff;
-            }
-        }, this->type);
+            } }, this->type);
     }
 
     const char *name() const
@@ -169,10 +168,25 @@ struct Force
         using T = std::decay_t<decltype(value)>;
 
         if constexpr (std::is_same_v<T, ForceGravity>) return "Gravity";
-        else if constexpr (std::is_same_v<T, ForcePoint>) return "Point";
-    }, this->type);
+        else if constexpr (std::is_same_v<T, ForcePoint>) return "Point"; }, this->type);
     }
 };
+
+static void DrawVector3D(Vec3 pos, Vec3 vec, Color body_color, Color tip_color, float thickness = 0.02f)
+{
+    f32 length = vec.lensq();
+    if (length < FLT_EPSILON)
+    {
+        return;
+    }
+    length = sqrtf(length);
+
+    Vec3 tip = pos + vec;
+
+    DrawCylinderEx({pos.x, pos.y, pos.z}, {tip.x, tip.y, tip.z}, thickness, thickness, 8, body_color);
+    // DrawSphere({tip.x, tip.y, tip.z}, thickness + 0.02f, tip_color);
+    DrawCube({tip.x, tip.y, tip.z}, thickness + 0.02f, thickness + 0.02f, thickness + 0.02f, tip_color);
+}
 
 struct Emitter
 {
@@ -184,8 +198,9 @@ struct Emitter
     f32       speed    = 2.0f;
     RandomF32 lifetime = {1.0f, 0.0f};
 
-    std::variant<EmitterShapeRectangle> shape        = {EmitterShapeRectangle{}};
-    bool                                render_shape = true;
+    std::variant<EmitterShapeRectangle> shape              = {EmitterShapeRectangle{}};
+    bool                                render_shape       = true;
+    bool                                render_force_field = false;
 
     Vec4 birth_color = {1.0f, 1.0f, 1.0f, 1.0f};
     Vec4 death_color = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -202,6 +217,16 @@ struct Emitter
 
     Emitter() {}
     Emitter(std::string name) : name(name) {}
+
+    Vec3 get_force(Vec3 pos) const
+    {
+        Vec3 sum{};
+        for (const auto &force : forces)
+        {
+            sum += force.compute(pos);
+        }
+        return sum;
+    }
 
     void update(f32 dt)
     {
@@ -255,11 +280,32 @@ struct Emitter
 
         for (auto &p : particles)
         {
-            for (const auto &force : forces)
-            {
-                p.acc += force.compute(p);
-            }
+            p.acc = get_force(p.pos);
             p.update(dt);
+        }
+    }
+
+    void draw_forcefield(u32 cell_count, f32 cell_size) const
+    {
+        f32 half = cell_count * cell_size * 0.5f;
+
+        for (u32 y = 0; y <= cell_count; y++)
+        {
+            for (u32 z = 0; z <= cell_count; z++)
+            {
+                for (u32 x = 0; x <= cell_count; x++)
+                {
+                    Vec3 pos = {
+                        -half + x * cell_size,
+                        y * cell_size,
+                        -half + z * cell_size,
+                    };
+
+                    Vec3 vec = get_force(pos);
+
+                    DrawVector3D(pos, vec, YELLOW, BLUE);
+                }
+            }
         }
     }
 
@@ -276,6 +322,10 @@ struct Emitter
                             DrawCubeWiresThick({value.pos.x, 0.0f, value.pos.y}, value.size.x, 0.1f, value.size.y, 0.01f, YELLOW);
                         } }, shape);
         }
+        if (render_force_field)
+        {
+            draw_forcefield(15, 0.25f);
+        }
         if (blending == EmitterBlending::Additive)
         {
             rlDisableDepthMask();
@@ -290,6 +340,7 @@ struct Emitter
             EndBlendMode();
             rlEnableDepthMask();
         }
+        // DrawVector3D({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, RED, BLUE);
     }
 
   private:

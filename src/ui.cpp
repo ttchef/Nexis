@@ -257,6 +257,8 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
 
             ImGui::DragFloat3("Direction", &e.direction.x, 0.05f);
 
+            ImGui::Checkbox("Draw Forcefield", &e.render_force_field);
+
             i32 force_to_remove = -1;
             for (u32 i = 0; i < e.forces.size(); i++)
             {
@@ -291,8 +293,7 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
                                        ImGui::DragFloat3("Position", &value.pos.x, 0.05f);
                                        ImGui::DragFloat("Strength", &value.strength, 0.05f);
                                        ImGui::DragFloat("Falloff Radius", &value.falloff_radius, 0.05f);
-                                   }
-                               },
+                                   } },
                                force.type);
                     ImGui::TreePop();
                 }

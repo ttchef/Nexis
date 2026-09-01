@@ -78,6 +78,12 @@ struct Vec3
         return Vec3(x / other, y / other, z / other);
     }
 
+    // This is strictly for like initialized values where you cant have
+    // inacuraccies
+    bool operator==(const Vec3 &other) const {
+        return x == other.x && y == other.y && z == other.z;
+    }
+
     f32 lensq() const {
         return x * x + y * y + z * z; 
     }
