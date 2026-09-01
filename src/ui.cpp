@@ -207,7 +207,7 @@ static bool DragRandomFloat(const char *label, RandomF32 &r, f32 speed = 0.05f, 
     return changed;
 }
 
-void ui::Context::compute(std::vector<Emitter> &emitters)
+void ui::Context::compute(std::vector<particle::Emitter> &emitters)
 {
     rlImGuiBegin();
 
@@ -229,7 +229,7 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
         if (ImGui::Button("Create Emitter"))
         {
             emitters.push_back(add_emitter);
-            add_emitter = Emitter();
+            add_emitter = particle::Emitter();
             ImGui::CloseCurrentPopup();
         }
         ImGui::EndDisabled();
@@ -286,12 +286,12 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
                                {
                                    using T = std::decay_t<decltype(value)>;
 
-                                   if constexpr (std::is_same_v<T, ForceGravity>)
+                                   if constexpr (std::is_same_v<T, particle::ForceGravity>)
                                    {
                                         ImGui::DragFloat3("Direction", &value.direction.x, 0.05f);
                                         ImGui::DragFloat("Strength", &value.strength, 0.05f);
                                    }
-                                   else if constexpr (std::is_same_v<T, ForcePoint>)
+                                   else if constexpr (std::is_same_v<T, particle::ForcePoint>)
                                    {
                                        ImGui::DragFloat3("Position", &value.pos.x, 0.05f);
                                        ImGui::DragFloat("Strength", &value.strength, 0.05f);
@@ -318,11 +318,11 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
             {
                 if (ImGui::Selectable("Gravity"))
                 {
-                    e.forces.push_back({ForceGravity{}, true});
+                    e.forces.push_back({particle::ForceGravity{}, true});
                 }
                 if (ImGui::Selectable("Point"))
                 {
-                    e.forces.push_back({ForcePoint{}, true});
+                    e.forces.push_back({particle::ForcePoint{}, true});
                 }
                 ImGui::EndPopup();
             }
@@ -335,7 +335,7 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
             DragRandomFloat("Birth Size", e.birth_size);
             DragRandomFloat("Death Size", e.death_size);
 
-            ImGui::Combo("Blend Mode", reinterpret_cast<i32 *>(&e.blending), emitter_blending_names, ARRAY_COUNT(emitter_blending_names));
+            ImGui::Combo("Blend Mode", reinterpret_cast<i32 *>(&e.blending), particle::emitter_blending_names, ARRAY_COUNT(particle::emitter_blending_names));
 
             if (ImGui::Button("Load Texture"))
             {
@@ -381,15 +381,15 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
 
             const char *current = "Unkown";
 
-            if (std::holds_alternative<EmitterShapeRectangle>(e.shape))
+            if (std::holds_alternative<particle::EmitterShapeRectangle>(e.shape))
             {
                 current = "Rectangle";
             }
             if (ImGui::BeginCombo("Emitter Shape", current))
             {
-                if (ImGui::Selectable("Rectangle", std::holds_alternative<EmitterShapeRectangle>(e.shape)))
+                if (ImGui::Selectable("Rectangle", std::holds_alternative<particle::EmitterShapeRectangle>(e.shape)))
                 {
-                    e.shape = EmitterShapeRectangle{};
+                    e.shape = particle::EmitterShapeRectangle{};
                 }
 
                 ImGui::EndCombo();
@@ -400,7 +400,7 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
                        {
                 using T = std::decay_t<decltype(value)>;
 
-                if constexpr (std::is_same_v<T, EmitterShapeRectangle>) {
+                if constexpr (std::is_same_v<T, particle::EmitterShapeRectangle>) {
                     ImGui::DragFloat2("##pos", &value.pos.x, 0.05f);
                     ImGui::SameLine();
                     ImGui::Text("Position");

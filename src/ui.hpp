@@ -2,9 +2,7 @@
 
 #include <types.hpp>
 #include <globals.hpp>
-#include <particle_system.hpp>
-
-#include <vector>
+#include <particle.hpp>
 
 #include <raylib.h>
 
@@ -19,12 +17,12 @@ struct Context
 
     f32 dpi_scale;
 
-    Emitter add_emitter;
-    
+    particle::Emitter add_emitter;
+
     Context(f32 dpi_scale);
     ~Context();
 
-    void compute(std::vector<Emitter> &emitters);
+    void compute(std::vector<particle::Emitter> &emitters);
 };
 
 } // namespace ui
