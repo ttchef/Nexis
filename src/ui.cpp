@@ -237,6 +237,8 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
             ImGui::DragFloat("Death Size", &e.death_size, 0.005f);
             e.death_size = std::max(e.death_size, 0.0f);
 
+            ImGui::Combo("Blend Mode", reinterpret_cast<i32 *>(&e.blending), emitter_blending_names, ARRAY_COUNT(emitter_blending_names));
+
             if (ImGui::Button("Load Texture"))
             {
                 NFD::UniquePathN  out_path;

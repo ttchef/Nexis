@@ -42,14 +42,15 @@ struct Particle
         f32 t = std::clamp(1.0f - (lifetime / start_lifetime), 0.0f, 1.0f);
 
         f32 size = lerp(birth_size, death_size, t);
+            auto color = birth_color.lerp(death_color, t);
+
         if (!texture)
         {
-            auto color = birth_color.lerp(death_color, t);
             DrawSphere({pos.x, pos.y, pos.z}, size, color.raylib_color());
         }
         else
         {
-            DrawBillboard(camera, *texture, {pos.x, pos.y, pos.z}, size, WHITE);
+            DrawBillboard(camera, *texture, {pos.x, pos.y, pos.z}, size, color.raylib_color());
         }
     }
 };
@@ -97,6 +98,17 @@ static void DrawCubeWiresThick(Vector3 position, float width, float height, floa
         DrawCylinderEx(corners[e[0]], corners[e[1]], thickness, thickness, 6, color);
 }
 
+enum struct EmitterBlending : i32
+{
+    Opaque,
+    Additive,
+};
+
+static const char *emitter_blending_names[] = {
+    "Opaque",
+    "Additive",  
+};
+
 struct Emitter
 {
     std::string           name;
@@ -106,7 +118,7 @@ struct Emitter
     f32 lifetime = 1.0f;
 
     std::variant<EmitterShapeRectangle> shape        = {EmitterShapeRectangle{}};
-    bool                                render_shape = false;
+    bool                                render_shape = true;
 
     Vec4 birth_color = {1.0f, 1.0f, 1.0f, 1.0f};
     Vec4 death_color = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -118,6 +130,8 @@ struct Emitter
 
     std::string              texture_path{};
     std::optional<Texture2D> texture{};
+
+    EmitterBlending blending = EmitterBlending::Opaque;
 
     Emitter() {}
     Emitter(std::string name) : name(name) {}
@@ -181,9 +195,17 @@ struct Emitter
                             DrawCubeWiresThick({value.pos.x, 0.0f, value.pos.y}, value.size.x, 0.1f, value.size.y, 0.01f, YELLOW);
                         } }, shape);
         }
+        if (blending == EmitterBlending::Additive)
+        {
+            BeginBlendMode(BLEND_ADDITIVE);
+        }
         for (const auto &p : particles)
         {
             p.draw(camera);
+        }
+        if (blending == EmitterBlending::Additive)
+        {
+            EndBlendMode();
         }
     }
 
