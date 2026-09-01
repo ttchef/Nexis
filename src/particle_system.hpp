@@ -58,6 +58,34 @@ struct EmitterShapeRectangle
     Vec2 size;
 };
 
+// Temporary
+static void DrawCubeWiresThick(Vector3 position, float width, float height, float length, float thickness, Color color)
+{
+    float x = width  / 2.0f;
+    float y = height / 2.0f;
+    float z = length / 2.0f;
+
+    Vector3 corners[8] = {
+        { position.x - x, position.y - y, position.z - z },
+        { position.x + x, position.y - y, position.z - z },
+        { position.x + x, position.y + y, position.z - z },
+        { position.x - x, position.y + y, position.z - z },
+        { position.x - x, position.y - y, position.z + z },
+        { position.x + x, position.y - y, position.z + z },
+        { position.x + x, position.y + y, position.z + z },
+        { position.x - x, position.y + y, position.z + z },
+    };
+
+    int edges[12][2] = {
+        {0,1},{1,2},{2,3},{3,0},
+        {4,5},{5,6},{6,7},{7,4},
+        {0,4},{1,5},{2,6},{3,7},
+    };
+
+    for (auto& e : edges)
+        DrawCylinderEx(corners[e[0]], corners[e[1]], thickness, thickness, 6, color);
+}
+
 struct Emitter
 {
     std::string           name;
@@ -139,7 +167,7 @@ struct Emitter
 
                         if constexpr (std::is_same_v<T, EmitterShapeRectangle>)
                         {
-                            DrawCubeWires({value.pos.x, 0.0f, value.pos.y}, value.size.x, 0.1f, value.size.y, YELLOW);
+                            DrawCubeWiresThick({value.pos.x, 0.0f, value.pos.y}, value.size.x, 0.1f, value.size.y, 0.01f, YELLOW);
                         } }, shape);
         }
         for (const auto &p : particles)

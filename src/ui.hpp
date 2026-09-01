@@ -14,8 +14,8 @@ namespace ui
 struct Context
 {
     RenderTexture2D scene;
+    f32 dpi_scale;
 
-    bool show_options_menu;
     Emitter add_emitter;
     
     Context(f32 dpi_scale);
