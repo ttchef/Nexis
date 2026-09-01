@@ -175,6 +175,38 @@ ui::Context::~Context()
     rlImGuiShutdown();
 }
 
+static bool DragRandomFloat(const char *label, RandomF32 &r, f32 speed = 0.05f, f32 min = 0.0f)
+{
+    bool changed = false;
+
+    ImGui::PushID(label);
+
+    ImGui::SetNextItemWidth(ImGui::CalcItemWidth() * 0.55f);
+    changed |= ImGui::DragFloat("##base", &r.value, speed);
+    if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Right))
+    {
+        ImGui::SetTooltip("%s", "Actual value");
+    }
+
+    ImGui::SameLine(0.0f, 4.0f);
+    ImGui::SetNextItemWidth(ImGui::CalcItemWidth() * 0.35f);
+    changed |= ImGui::DragFloat("##offset", &r.offset, speed);
+    if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Right))
+    {
+        ImGui::SetTooltip("%s", "Offset range for random values");
+    }
+
+    ImGui::SameLine();
+    ImGui::TextUnformatted(label);
+
+    r.value = std::max(r.value, min);
+    r.offset = std::max(r.offset, 0.0f);
+
+    ImGui::PopID();
+
+    return changed;
+}
+
 void ui::Context::compute(std::vector<Emitter> &emitters)
 {
     rlImGuiBegin();
@@ -221,8 +253,7 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
             ImGui::DragFloat("Emitter speed", &e.speed, 0.05f);
             e.speed = std::max(e.speed, 0.0f);
 
-            ImGui::DragFloat("Particle lifetime", &e.lifetime, 0.05f);
-            e.lifetime = std::max(e.lifetime, 0.0f);
+            DragRandomFloat("Particle lifetime", e.lifetime);
 
             ImGui::DragFloat3("Direction", &e.direction.x, 0.05f);
 
@@ -231,11 +262,8 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
             ImGui::ColorEdit4("Birth Color", static_cast<f32 *>(&e.birth_color.x), ImGuiColorEditFlags_AlphaBar);
             ImGui::ColorEdit4("Death Color", static_cast<f32 *>(&e.death_color.x), ImGuiColorEditFlags_AlphaBar);
 
-            ImGui::DragFloat("Birth Size", &e.birth_size, 0.005f);
-            e.birth_size = std::max(e.birth_size, 0.0f);
-
-            ImGui::DragFloat("Death Size", &e.death_size, 0.005f);
-            e.death_size = std::max(e.death_size, 0.0f);
+            DragRandomFloat("Birth Size", e.birth_size);
+            DragRandomFloat("Death Size", e.death_size);
 
             ImGui::Combo("Blend Mode", reinterpret_cast<i32 *>(&e.blending), emitter_blending_names, ARRAY_COUNT(emitter_blending_names));
 

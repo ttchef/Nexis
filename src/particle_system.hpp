@@ -11,21 +11,22 @@
 #include <vector>
 
 #include <raylib.h>
+#include <rlgl.h>
 
 using namespace math;
 
 struct Particle
 {
-    Vec4       birth_color;
-    Vec4       death_color;
-    Vec3       pos;
-    Vec3       vel;
-    Vec3       acc;
-    f32        lifetime;
-    f32        start_lifetime;
-    f32        birth_size;
-    f32        death_size;
-    Texture2D *texture = nullptr;
+    Vec4                     birth_color;
+    Vec4                     death_color;
+    Vec3                     pos;
+    Vec3                     vel;
+    Vec3                     acc;
+    f32                      age;
+    f32                      lifetime;
+    f32                      birth_size;
+    f32                      death_size;
+    std::optional<Texture2D> texture;
 
     void update(f32 dt)
     {
@@ -34,15 +35,15 @@ struct Particle
 
         acc = Vec3::zero();
 
-        lifetime -= dt;
+        age -= dt;
     }
 
     void draw(const Camera3D &camera) const
     {
-        f32 t = std::clamp(1.0f - (lifetime / start_lifetime), 0.0f, 1.0f);
+        f32 t = std::clamp(1.0f - (age / lifetime), 0.0f, 1.0f);
 
-        f32 size = lerp(birth_size, death_size, t);
-            auto color = birth_color.lerp(death_color, t);
+        f32  size  = lerp(birth_size, death_size, t);
+        auto color = birth_color.lerp(death_color, t);
 
         if (!texture)
         {
@@ -50,7 +51,7 @@ struct Particle
         }
         else
         {
-            DrawBillboard(camera, *texture, {pos.x, pos.y, pos.z}, size, color.raylib_color());
+            DrawBillboard(camera, texture.value(), {pos.x, pos.y, pos.z}, size, color.raylib_color());
         }
     }
 };
@@ -106,7 +107,7 @@ enum struct EmitterBlending : i32
 
 static const char *emitter_blending_names[] = {
     "Opaque",
-    "Additive",  
+    "Additive",
 };
 
 struct Emitter
@@ -114,8 +115,8 @@ struct Emitter
     std::string           name;
     std::vector<Particle> particles;
     // particles per second
-    f32 speed    = 2.0f;
-    f32 lifetime = 1.0f;
+    f32       speed    = 2.0f;
+    RandomF32 lifetime = {1.0f, 0.0f};
 
     std::variant<EmitterShapeRectangle> shape        = {EmitterShapeRectangle{}};
     bool                                render_shape = true;
@@ -123,8 +124,8 @@ struct Emitter
     Vec4 birth_color = {1.0f, 1.0f, 1.0f, 1.0f};
     Vec4 death_color = {1.0f, 1.0f, 1.0f, 1.0f};
 
-    f32 birth_size = 0.08f;
-    f32 death_size = 0.08f;
+    RandomF32 birth_size = {0.08f, 0.0f};
+    RandomF32 death_size = {0.08f, 0.0f};
 
     Vec3 direction = {0.0f, 1.0f, 0.0f};
 
@@ -159,22 +160,32 @@ struct Emitter
                                 pos = {global.random(min.x, max.x), 0.0f, global.random(min.y, max.y)};     
                            } }, shape);
 
+            f32 particle_lifetime = lifetime.sample(global.random);
             particles.push_back({
-                .birth_color    = birth_color,
-                .death_color    = death_color,
-                .pos            = pos,
-                .vel            = direction,
-                .lifetime       = lifetime,
-                .start_lifetime = lifetime,
-                .birth_size     = birth_size,
-                .death_size     = death_size,
-                .texture        = texture ? &texture.value() : nullptr,
+                .birth_color = birth_color,
+                .death_color = death_color,
+                .pos         = pos,
+                .vel         = direction,
+                .age         = particle_lifetime,
+                .lifetime    = particle_lifetime,
+                .birth_size  = birth_size.sample(global.random),
+                .death_size  = death_size.sample(global.random),
+                .texture     = texture,
             });
         }
 
-        particles.erase(std::remove_if(particles.begin(), particles.end(), [](const auto &p)
-                                       { return p.lifetime <= 0.0f; }),
-                        particles.end());
+        for (u32 i = 0; i < particles.size();)
+        {
+            if (particles[i].age <= 0.0f)
+            {
+                particles[i] = particles.back();
+                particles.pop_back();
+            }
+            else
+            {
+                i++;
+            }
+        }
 
         for (auto &p : particles)
         {
@@ -197,6 +208,7 @@ struct Emitter
         }
         if (blending == EmitterBlending::Additive)
         {
+            rlDisableDepthMask();
             BeginBlendMode(BLEND_ADDITIVE);
         }
         for (const auto &p : particles)
@@ -206,6 +218,7 @@ struct Emitter
         if (blending == EmitterBlending::Additive)
         {
             EndBlendMode();
+            rlEnableDepthMask();
         }
     }
 
