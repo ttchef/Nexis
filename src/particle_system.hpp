@@ -61,28 +61,37 @@ struct EmitterShapeRectangle
 // Temporary
 static void DrawCubeWiresThick(Vector3 position, float width, float height, float length, float thickness, Color color)
 {
-    float x = width  / 2.0f;
+    float x = width / 2.0f;
     float y = height / 2.0f;
     float z = length / 2.0f;
 
     Vector3 corners[8] = {
-        { position.x - x, position.y - y, position.z - z },
-        { position.x + x, position.y - y, position.z - z },
-        { position.x + x, position.y + y, position.z - z },
-        { position.x - x, position.y + y, position.z - z },
-        { position.x - x, position.y - y, position.z + z },
-        { position.x + x, position.y - y, position.z + z },
-        { position.x + x, position.y + y, position.z + z },
-        { position.x - x, position.y + y, position.z + z },
+        {position.x - x, position.y - y, position.z - z},
+        {position.x + x, position.y - y, position.z - z},
+        {position.x + x, position.y + y, position.z - z},
+        {position.x - x, position.y + y, position.z - z},
+        {position.x - x, position.y - y, position.z + z},
+        {position.x + x, position.y - y, position.z + z},
+        {position.x + x, position.y + y, position.z + z},
+        {position.x - x, position.y + y, position.z + z},
     };
 
     int edges[12][2] = {
-        {0,1},{1,2},{2,3},{3,0},
-        {4,5},{5,6},{6,7},{7,4},
-        {0,4},{1,5},{2,6},{3,7},
+        {0, 1},
+        {1, 2},
+        {2, 3},
+        {3, 0},
+        {4, 5},
+        {5, 6},
+        {6, 7},
+        {7, 4},
+        {0, 4},
+        {1, 5},
+        {2, 6},
+        {3, 7},
     };
 
-    for (auto& e : edges)
+    for (auto &e : edges)
         DrawCylinderEx(corners[e[0]], corners[e[1]], thickness, thickness, 6, color);
 }
 
@@ -94,14 +103,14 @@ struct Emitter
     f32 speed    = 2.0f;
     f32 lifetime = 1.0f;
 
-    std::variant<EmitterShapeRectangle> shape = {EmitterShapeRectangle{}};
-    bool                                render_shape;
+    std::variant<EmitterShapeRectangle> shape        = {EmitterShapeRectangle{}};
+    bool                                render_shape = false;
 
     Vec4 birth_color = {1.0f, 1.0f, 1.0f, 1.0f};
     Vec4 death_color = {1.0f, 1.0f, 1.0f, 1.0f};
 
-    f32 birth_size = 0.2f;
-    f32 death_size = 0.2f;
+    f32 birth_size = 0.08f;
+    f32 death_size = 0.08f;
 
     Vec3 direction = {0.0f, 1.0f, 0.0f};
 

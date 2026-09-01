@@ -30,9 +30,9 @@ struct SceneCamera
         rho = 10.0f;
     }
 
-    void update(f32 dt)
+    void update(const ui::Context &ui, f32 dt)
     {
-        if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE))
+        if (ui.scene_texture_active)
         {
             auto delta = GetMouseDelta();
             constexpr f32 sensitivity = 0.1f;
@@ -101,7 +101,7 @@ i32 main()
         global.update_window_size(GetScreenWidth(), GetScreenHeight());
         f32 dt = GetFrameTime();
 
-        camera.update(dt);
+        camera.update(ui, dt);
         SetShaderValue(grid_shader, camera_pos_loc, &camera.raylib.position, SHADER_UNIFORM_VEC3);
 
         for (auto &e : emitters)

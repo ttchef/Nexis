@@ -123,7 +123,9 @@ ui::Context::Context(f32 dpi_scale)
     io.FontDefault    = default_font;
     io.Fonts->Build();
 
+    // Init members
     scene = LoadRenderTexture(2560, 1440);
+    scene_texture_active = false;
 }
 
 ui::Context::~Context()
@@ -169,6 +171,9 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
 
         if (ImGui::CollapsingHeader(e.name.c_str()))
         {
+            ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.0f * dpi_scale);
+            ImGui::BeginChild("emitter_container", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY);
+
             ImGui::SeparatorText("Motion");
 
             ImGui::DragFloat("Emitter speed", &e.speed, 0.05f);
@@ -181,8 +186,8 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
 
             ImGui::SeparatorText("Appearance");
 
-            ImGui::ColorEdit4("Birth Color", static_cast<f32 *>(&e.birth_color.x));
-            ImGui::ColorEdit4("Death Color", static_cast<f32 *>(&e.death_color.x));
+            ImGui::ColorEdit4("Birth Color", static_cast<f32 *>(&e.birth_color.x), ImGuiColorEditFlags_AlphaBar);
+            ImGui::ColorEdit4("Death Color", static_cast<f32 *>(&e.death_color.x), ImGuiColorEditFlags_AlphaBar);
 
             ImGui::DragFloat("Birth Size", &e.birth_size, 0.005f);
             e.birth_size = std::max(e.birth_size, 0.0f);
@@ -263,6 +268,8 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
 
                      value.size.max(0.0f);
                 } }, e.shape);
+            ImGui::EndChild();
+            ImGui::PopStyleVar();
         }
         ImGui::PopID();
     }
@@ -277,7 +284,7 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
     f32 width  = available.x;
     f32 height = width / aspect;
 
-    if (height > available.x)
+    if (height > available.y)
     {
         height = available.y;
         width  = height * aspect;
@@ -290,6 +297,15 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
         size,
         ImVec2(0, 1),
         ImVec2(1, 0));
+
+    if (ImGui::IsItemClicked(ImGuiMouseButton_Middle))
+    {
+        scene_texture_active = true;
+    }
+    if (ImGui::IsMouseReleased(ImGuiMouseButton_Middle))
+    {
+        scene_texture_active = false;
+    }
     ImGui::End();
 
     rlImGuiEnd();

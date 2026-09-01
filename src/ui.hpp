@@ -14,6 +14,9 @@ namespace ui
 struct Context
 {
     RenderTexture2D scene;
+    // Clicked on scene texture while hovering
+    bool scene_texture_active;
+
     f32 dpi_scale;
 
     Emitter add_emitter;
