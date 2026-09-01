@@ -12,6 +12,8 @@
 
 #include <raylib.h>
 
+using namespace math;
+
 struct Particle
 {
     Vec4       birth_color;

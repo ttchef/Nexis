@@ -4,6 +4,7 @@
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.cpp>
 #include <misc/cpp/imgui_stdlib.h>
+#include <imgui_internal.h>
 #include <nfd.hpp>
 #include <rlImGui.h>
 
@@ -104,6 +105,47 @@ static void setup_style(ImGuiStyle &style)
 #endif
 }
 
+static void setup_dockspace()
+{
+    ImGuiViewport *viewport = ImGui::GetMainViewport();
+
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(viewport->WorkSize);
+    ImGui::SetNextWindowViewport(viewport->ID);
+
+    ImGuiWindowFlags host_flags =
+        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus |
+        ImGuiWindowFlags_NoBackground;
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::Begin("Dock", nullptr, host_flags);
+    ImGui::PopStyleVar(3);
+
+    ImGuiID dockspace_id = ImGui::GetID("Dockspace");
+
+    if (ImGui::DockBuilderGetNode(dockspace_id) == nullptr)
+    {
+        ImGui::DockBuilderRemoveNode(dockspace_id);
+        ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
+        ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->WorkSize);
+
+        ImGuiID dock_viewport_id = dockspace_id;
+        ImGuiID dock_settings_id = ImGui::DockBuilderSplitNode(dock_viewport_id, ImGuiDir_Right, 0.30f, nullptr, &dock_viewport_id);
+
+        ImGui::DockBuilderDockWindow("Settings", dock_settings_id);
+        ImGui::DockBuilderDockWindow("Viewport", dock_viewport_id);
+
+        ImGui::DockBuilderFinish(dockspace_id);
+    }
+
+    ImGui::DockSpace(dockspace_id);
+    ImGui::End();
+}
+
 ui::Context::Context(f32 dpi_scale)
     : dpi_scale(dpi_scale)
 {
@@ -124,7 +166,7 @@ ui::Context::Context(f32 dpi_scale)
     io.Fonts->Build();
 
     // Init members
-    scene = LoadRenderTexture(2560, 1440);
+    scene                = LoadRenderTexture(2560, 1440);
     scene_texture_active = false;
 }
 
@@ -137,7 +179,7 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
 {
     rlImGuiBegin();
 
-    ImGui::DockSpaceOverViewport();
+    setup_dockspace();
 
     ImGui::Begin("Settings");
 
@@ -276,7 +318,7 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
 
     ImGui::End();
 
-    ImGui::Begin("Scene");
+    ImGui::Begin("Viewport");
 
     ImVec2 available = ImGui::GetContentRegionAvail();
 
