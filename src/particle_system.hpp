@@ -110,10 +110,76 @@ static const char *emitter_blending_names[] = {
     "Additive",
 };
 
+struct ForceGravity
+{
+    Vec3 direction = {0.0f, -1.0f, 0.0f};
+    f32  strength  = 4.0f;
+};
+
+struct ForcePoint
+{
+    Vec3 pos = {0.0f, 0.0f, 0.0f};
+    f32 strength;
+    f32 falloff_radius; // 0 = no falloff  
+};
+
+using ForceType = std::variant<ForceGravity, ForcePoint>;
+
+struct Force
+{
+    ForceType type;
+    bool      enabled = true;
+
+    Vec3 compute(const Particle &p) const
+    {
+        if (!enabled)
+        {
+            return Vec3::zero();
+        }
+
+        return std::visit([&](auto &&value) -> Vec3
+                          {
+            using T = std::decay_t<decltype(value)>;
+
+            if constexpr (std::is_same_v<T, ForceGravity>)
+            {
+                return value.direction.norm() * value.strength;
+            }
+            else if constexpr (std::is_same_v<T, ForcePoint>)
+            {
+                Vec3 to_point = value.pos - p.pos;
+                f32 dist = to_point.lensq();
+                if (dist < FLT_EPSILON)
+                {
+                    return Vec3::zero();
+                }
+                dist = sqrtf(dist);
+
+                Vec3 dir = to_point / dist;
+                f32 falloff = value.falloff_radius > 0.0f ? std::clamp(1.0f - dist / value.falloff_radius, 0.0f, 1.0f) : 1.0f;
+                return dir * value.strength * falloff;
+            }
+        }, this->type);
+    }
+
+    const char *name() const
+    {
+        return std::visit([](auto &&value) -> const char *
+                          {
+        using T = std::decay_t<decltype(value)>;
+
+        if constexpr (std::is_same_v<T, ForceGravity>) return "Gravity";
+        else if constexpr (std::is_same_v<T, ForcePoint>) return "Point";
+    }, this->type);
+    }
+};
+
 struct Emitter
 {
     std::string           name;
     std::vector<Particle> particles;
+    std::vector<Force>    forces;
+
     // particles per second
     f32       speed    = 2.0f;
     RandomF32 lifetime = {1.0f, 0.0f};
@@ -189,6 +255,10 @@ struct Emitter
 
         for (auto &p : particles)
         {
+            for (const auto &force : forces)
+            {
+                p.acc += force.compute(p);
+            }
             p.update(dt);
         }
     }

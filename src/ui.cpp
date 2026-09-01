@@ -2,9 +2,9 @@
 #include <ui.hpp>
 
 #include <imgui.h>
+#include <imgui_internal.h>
 #include <misc/cpp/imgui_stdlib.cpp>
 #include <misc/cpp/imgui_stdlib.h>
-#include <imgui_internal.h>
 #include <nfd.hpp>
 #include <rlImGui.h>
 
@@ -199,7 +199,7 @@ static bool DragRandomFloat(const char *label, RandomF32 &r, f32 speed = 0.05f, 
     ImGui::SameLine();
     ImGui::TextUnformatted(label);
 
-    r.value = std::max(r.value, min);
+    r.value  = std::max(r.value, min);
     r.offset = std::max(r.offset, 0.0f);
 
     ImGui::PopID();
@@ -256,6 +256,72 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
             DragRandomFloat("Particle lifetime", e.lifetime);
 
             ImGui::DragFloat3("Direction", &e.direction.x, 0.05f);
+
+            i32 force_to_remove = -1;
+            for (u32 i = 0; i < e.forces.size(); i++)
+            {
+                auto &force = e.forces[i];
+
+                ImGui::PushID(i);
+
+                ImGui::Checkbox("##enabled", &force.enabled);
+                ImGui::SameLine();
+
+                bool open = ImGui::TreeNodeEx("##node", ImGuiTreeNodeFlags_None, "%s", force.name());
+
+                ImGui::SameLine(ImGui::GetContentRegionAvail().x - 12.0f * dpi_scale);
+                if (ImGui::SmallButton("x"))
+                {
+                    force_to_remove = i;
+                }
+
+                if (open)
+                {
+                    std::visit([](auto &&value)
+                               {
+                                   using T = std::decay_t<decltype(value)>;
+
+                                   if constexpr (std::is_same_v<T, ForceGravity>)
+                                   {
+                                        ImGui::DragFloat3("Direction", &value.direction.x, 0.05f);
+                                        ImGui::DragFloat("Strength", &value.strength, 0.05f);
+                                   }
+                                   else if constexpr (std::is_same_v<T, ForcePoint>)
+                                   {
+                                       ImGui::DragFloat3("Position", &value.pos.x, 0.05f);
+                                       ImGui::DragFloat("Strength", &value.strength, 0.05f);
+                                       ImGui::DragFloat("Falloff Radius", &value.falloff_radius, 0.05f);
+                                   }
+                               },
+                               force.type);
+                    ImGui::TreePop();
+                }
+
+                ImGui::PopID();
+            }
+
+            if (force_to_remove >= 0)
+            {
+                e.forces.erase(e.forces.begin() + force_to_remove);
+            }
+
+            if (ImGui::Button("Add Force", ImVec2(-FLT_MIN, 0)))
+            {
+                ImGui::OpenPopup("AddForcePopup");
+            }
+
+            if (ImGui::BeginPopup("AddForcePopup"))
+            {
+                if (ImGui::Selectable("Gravity"))
+                {
+                    e.forces.push_back({ForceGravity{}, true});
+                }
+                if (ImGui::Selectable("Point"))
+                {
+                    e.forces.push_back({ForcePoint{}, true});
+                }
+                ImGui::EndPopup();
+            }
 
             ImGui::SeparatorText("Appearance");
 
