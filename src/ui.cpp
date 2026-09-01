@@ -243,6 +243,9 @@ void ui::Context::compute(std::vector<Emitter> &emitters)
 
         ImGui::PushID(i);
 
+        ImGui::Checkbox("##enabled", &e.enabled);
+        ImGui::SameLine();
+
         if (ImGui::CollapsingHeader(e.name.c_str()))
         {
             ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.0f * dpi_scale);

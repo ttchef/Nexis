@@ -190,6 +190,7 @@ static void DrawVector3D(Vec3 pos, Vec3 vec, Color body_color, Color tip_color, 
 
 struct Emitter
 {
+    bool                  enabled = true;
     std::string           name;
     std::vector<Particle> particles;
     std::vector<Force>    forces;
@@ -230,6 +231,11 @@ struct Emitter
 
     void update(f32 dt)
     {
+        if (!enabled)
+        {
+            return;
+        }
+
         elapsed_time += dt;
 
         const f32 interval = 1.0f / speed;
@@ -311,6 +317,11 @@ struct Emitter
 
     void draw(const Camera3D &camera) const
     {
+        if (!enabled)
+        {
+            return;
+        }
+
         if (render_shape)
         {
             std::visit([](auto &value)
