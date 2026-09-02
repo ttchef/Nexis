@@ -63,6 +63,31 @@ AppState Editor::draw(AppContext &ctx)
 {
     setup_editor_dockspace();
 
+    if (ImGui::BeginMainMenuBar())
+    {
+        if (ImGui::BeginMenu("File"))
+        {
+            if (ImGui::MenuItem("Open"))
+            {
+            }
+            if (ImGui::MenuItem("Save"))
+            {
+            }
+
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Exit"))
+            {
+            }
+
+            ImGui::EndMenu();
+        }
+
+        ImGui::TextDisabled("Project %s", ctx.project->file_name.c_str());
+
+        ImGui::EndMainMenuBar();
+    }
+
     ImGui::Begin("Settings");
 
     if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
@@ -78,7 +103,7 @@ AppState Editor::draw(AppContext &ctx)
         ImGui::BeginDisabled(!can_create);
         if (ImGui::Button("Create Emitter"))
         {
-            ctx.system->emitters.push_back(add_emitter);
+            ctx.project->system.emitters.push_back(add_emitter);
             add_emitter = particle::Emitter();
             ImGui::CloseCurrentPopup();
         }
@@ -87,9 +112,9 @@ AppState Editor::draw(AppContext &ctx)
         ImGui::EndPopup();
     }
 
-    for (u32 i = 0; i < ctx.system->emitters.size(); i++)
+    for (u32 i = 0; i < ctx.project->system.emitters.size(); i++)
     {
-        auto &e = ctx.system->emitters[i];
+        auto &e = ctx.project->system.emitters[i];
 
         ImGui::PushID(i);
 

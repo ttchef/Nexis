@@ -17,7 +17,7 @@ struct AppContext
     ImFont *mdedium_font;
     ImFont *header_font;
 
-    particle::System *system;
+    Project *project;
     std::vector<Project> *projects;
     SceneCamera *camera;
 };

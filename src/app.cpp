@@ -77,13 +77,13 @@ bool App::should_close()
 AppContext App::make_context()
 {
     return AppContext{
-        .dpi_scale     = ui.dpi_scale,
-        .normal_font   = ui.normal_font,
-        .mdedium_font  = ui.medium_font,
-        .header_font   = ui.header_font,
-        .system        = &system,
-        .projects = &projects,
-        .camera        = &camera,
+        .dpi_scale    = ui.dpi_scale,
+        .normal_font  = ui.normal_font,
+        .mdedium_font = ui.medium_font,
+        .header_font  = ui.header_font,
+        .project      = &project,
+        .projects     = &projects,
+        .camera       = &camera,
     };
 }
 
@@ -98,7 +98,7 @@ void App::update()
 
     if (state == AppState::Editor)
     {
-        system.update(dt);
+        project.system.update(dt);
     }
 }
 
@@ -114,7 +114,7 @@ static void scene_draw(App &app)
 
     EndShaderMode();
 
-    app.system.draw(app.camera);
+    app.project.system.draw(app.camera);
 
     EndMode3D();
     EndTextureMode();

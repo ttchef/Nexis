@@ -27,11 +27,8 @@ struct App
 
 	Window window;
 	ui::Context ui;
-
-	// Current particle system.
-	// There is only one system in a project/entire life of the program
-	particle::System system{};
 	SceneCamera camera{};
+	Project project{};
 
 	App();
 	~App();

@@ -79,6 +79,32 @@ AppState ProjectExplorer::draw(AppContext &ctx)
     ImGui::SeparatorText("Projects");
     ImGui::PopFont();
 
+    if (ImGui::Button("New Project", ImVec2(-FLT_MIN, 0)))
+    {
+        ImGui::OpenPopup("add_project");
+        first_new_project_open = true;
+    }
+
+    if (first_new_project_open)
+    {
+        first_new_project_open = false;
+    }
+
+    if (ImGui::BeginPopup("add_project"))
+    {
+        ImGui::BeginDisabled(ctx.project->file_name.empty());
+        if (ImGui::Button("Create Project"))
+        {
+            state = AppState::Editor;
+        }
+        ImGui::EndDisabled();
+        
+        ImGui::SameLine();
+        ImGui::InputTextWithHint("##name", "Enter project name", &ctx.project->file_name);
+
+        ImGui::EndPopup(); 
+    }
+
     for (u32 i = 0; i < ctx.projects->size(); i++)
     {
         auto &project = ctx.projects->at(i);
@@ -107,11 +133,6 @@ AppState ProjectExplorer::draw(AppContext &ctx)
         ImGui::EndChild();
         ImGui::PopStyleVar();
         ImGui::PopID();
-    }
-
-    if (ImGui::Button("Open editor"))
-    {
-        state = AppState::Editor;
     }
 
     ImGui::End();
