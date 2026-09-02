@@ -1,7 +1,9 @@
 
 #include <ui/context.hpp>
 #include <ui/widgets.hpp>
+#include <utils.hpp>
 
+#include <misc/cpp/imgui_stdlib.cpp>
 #include <rlImGui.h>
 
 // https://github.com/ocornut/imgui/issues/707
@@ -115,9 +117,11 @@ Context::Context(f32 dpi_scale)
 
     ImFontConfig config;
     config.SizePixels = 16.0f * dpi_scale;
-    // TODO: Absolute path
-    auto default_font = io.Fonts->AddFontFromFileTTF("assets/fonts/ovelion.ttf", 16.0f * dpi_scale, &config);
-    io.FontDefault    = default_font;
+
+    normal_font = io.Fonts->AddFontFromFileTTF(utils::path_abs("../assets/fonts/ovelion.ttf").c_str(), 16.0f * dpi_scale, &config);
+    header_font = io.Fonts->AddFontFromFileTTF(utils::path_abs("../assets/fonts/ovelion.ttf").c_str(), 28.0f * dpi_scale, &config);
+    
+    io.FontDefault    = normal_font;
     io.Fonts->Build();
 }
 
@@ -135,7 +139,7 @@ AppState Context::draw(particle::System &system, AppState state)
     {
     case AppState::ProjectExplorer:
     {
-        new_state = explorer.draw(dpi_scale);
+        new_state = explorer.draw(dpi_scale, header_font);
     } break;
     case AppState::Editor:
     {

@@ -1,9 +1,11 @@
 
 #include <app.hpp>
 
+#include <utils.hpp>
+
 i32 main()
 {
-    auto app = new App();
+    auto app = new App{};
     while (!app->should_close()) {
         app->update();
         app->draw();

@@ -5,6 +5,8 @@
 #include <ui/editor.hpp>
 #include <ui/project_explorer.hpp>
 
+struct ImFont;
+
 namespace ui
 {
 struct Context
@@ -13,6 +15,9 @@ struct Context
     Editor editor;
     
     f32 dpi_scale;
+
+    ImFont *normal_font;
+    ImFont *header_font;
 
     Context(f32 dpi_scale);
     ~Context();

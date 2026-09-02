@@ -6,7 +6,6 @@
 
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <misc/cpp/imgui_stdlib.cpp>
 #include <misc/cpp/imgui_stdlib.h>
 #include <nfd.hpp>
 
@@ -27,10 +26,10 @@ static void setup_editor_dockspace()
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-    ImGui::Begin("Dock", nullptr, host_flags);
+    ImGui::Begin("EditorDock", nullptr, host_flags);
     ImGui::PopStyleVar(3);
 
-    ImGuiID dockspace_id = ImGui::GetID("Dockspace");
+    ImGuiID dockspace_id = ImGui::GetID("EditorDockspace");
 
     if (ImGui::DockBuilderGetNode(dockspace_id) == nullptr)
     {

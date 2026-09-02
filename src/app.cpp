@@ -2,6 +2,7 @@
 #include <app.hpp>
 #include <globals.hpp>
 #include <ui/context.hpp>
+#include <utils.hpp>
 
 #include <nfd.hpp>
 
@@ -27,8 +28,7 @@ App::App()
     // Native file dialog
     NFD::Init();
 
-    // TODO: Absolute paths
-    grid_shader.handle         = LoadShader("src/shaders/grid.vert", "src/shaders/grid.frag");
+    grid_shader.handle         = LoadShader(utils::path_abs("../src/shaders/grid.vert").c_str(), utils::path_abs("src/shaders/grid.frag").c_str());
     grid_shader.camera_pos_loc = GetShaderLocation(grid_shader.handle, "camera_pos");
 
     camera = SceneCamera{};
