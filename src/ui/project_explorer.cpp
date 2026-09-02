@@ -82,12 +82,6 @@ AppState ProjectExplorer::draw(AppContext &ctx)
     if (ImGui::Button("New Project", ImVec2(-FLT_MIN, 0)))
     {
         ImGui::OpenPopup("add_project");
-        first_new_project_open = true;
-    }
-
-    if (first_new_project_open)
-    {
-        first_new_project_open = false;
     }
 
     if (ImGui::BeginPopup("add_project"))
@@ -131,6 +125,13 @@ AppState ProjectExplorer::draw(AppContext &ctx)
         ImGui::PopFont();
 
         ImGui::EndChild();
+
+        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+        {
+            *ctx.project = project;
+            state = AppState::Editor;
+        }
+        
         ImGui::PopStyleVar();
         ImGui::PopID();
     }

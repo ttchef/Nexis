@@ -61,14 +61,18 @@ Editor::Editor()
 
 AppState Editor::draw(AppContext &ctx)
 {
+    AppState state = AppState::Editor;
+    
     setup_editor_dockspace();
 
     if (ImGui::BeginMainMenuBar())
     {
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("Open"))
+            if (ImGui::MenuItem("Home"))
             {
+                state = AppState::ProjectExplorer;
+                *ctx.project = Project();
             }
             if (ImGui::MenuItem("Save"))
             {
@@ -325,6 +329,6 @@ AppState Editor::draw(AppContext &ctx)
     }
     ImGui::End();
 
-    return AppState::Editor;
+    return state;
 }
 } // namespace ui

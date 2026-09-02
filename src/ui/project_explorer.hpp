@@ -10,8 +10,6 @@ namespace ui
 {
 struct ProjectExplorer
 {
-	bool first_new_project_open = false;
-
 	AppState draw(AppContext &ctx);
 };
 } // namespace ui
