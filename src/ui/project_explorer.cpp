@@ -1,11 +1,25 @@
 
 #include <ui/project_explorer.hpp>
 
+#include <ctime>
+
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <misc/cpp/imgui_stdlib.h>
 
 #include <raylib.h>
+
+// Not thread save right now ik but right now it doestn matter
+static const char *format_time(i64 time)
+{
+    static char buffer[32];
+
+    std::time_t mod_time = static_cast<std::time_t>(time);
+    std::tm *tm_info = std::localtime(&mod_time);
+    std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M", tm_info);
+
+    return buffer;
+}
 
 static void setup_explorer_dockspace()
 {
@@ -65,16 +79,30 @@ AppState ProjectExplorer::draw(AppContext &ctx)
     ImGui::SeparatorText("Projects");
     ImGui::PopFont();
 
-    for (u32 i = 0; i < ctx.project_files->size(); i++)
+    for (u32 i = 0; i < ctx.projects->size(); i++)
     {
-        auto &file = ctx.project_files->at(i);
+        auto &project = ctx.projects->at(i);
         
         ImGui::PushID(i);
         
         ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.0f * ctx.dpi_scale);
         ImGui::BeginChild("project_file", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY);
 
-        ImGui::Text("%s", GetFileNameWithoutExt(file.c_str()));
+        ImGui::PushFont(ctx.mdedium_font);
+        ImGui::Text("%s", project.file_name.c_str());
+        ImGui::SameLine();
+
+        std::string last_modified = std::string("Last modified: ") + format_time(project.mod_time);
+        f32 last_modified_width = ImGui::CalcTextSize(last_modified.c_str()).x;
+        f32 available = ImGui::GetContentRegionAvail().x;
+
+        if (available > last_modified_width)
+        {
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + available - last_modified_width);
+        }
+        ImGui::TextDisabled("%s", last_modified.c_str());
+
+        ImGui::PopFont();
 
         ImGui::EndChild();
         ImGui::PopStyleVar();

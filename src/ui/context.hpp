@@ -18,6 +18,7 @@ struct Context
     f32 dpi_scale;
 
     ImFont *normal_font;
+    ImFont *medium_font;
     ImFont *header_font;
 
     Context(f32 dpi_scale);

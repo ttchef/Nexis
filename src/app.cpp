@@ -8,8 +8,6 @@
 
 #include <nfd.hpp>
 
-static const char *NEXIS_PF_EX = ".nxp";
-
 static f32 scale_from_monitor()
 {
     i32 monitor  = GetCurrentMonitor();
@@ -26,7 +24,7 @@ static f32 scale_from_monitor()
     return dots_per_inc / 96.0f;
 }
 
-void load_projects(std::vector<std::string> &project_files)
+void load_projects(std::vector<Project> &projects)
 {
     std::string project_path = utils::path_abs("projects");
     if (!DirectoryExists(project_path.c_str()))
@@ -34,17 +32,21 @@ void load_projects(std::vector<std::string> &project_files)
         if (MakeDirectory(project_path.c_str()) != 0)
         {
             std::cout << "Failed to make projects directory" << std::endl;
-            std::exit(1);   
+            std::exit(1);
         }
         return;
     }
 
     FilePathList files = LoadDirectoryFilesEx(project_path.c_str(), NEXIS_PF_EX, false);
 
-    project_files.reserve(files.count);
+    projects.reserve(files.count);
     for (u32 i = 0; i < files.count; i++)
     {
-        project_files.push_back(files.paths[i]);
+        projects.push_back({
+            .file_path = files.paths[i],
+            .file_name = GetFileNameWithoutExt(files.paths[i]),
+            .mod_time  = GetFileModTime(files.paths[i]),
+        });
     }
 }
 
@@ -54,7 +56,7 @@ App::App()
     // Native file dialog
     NFD::Init();
 
-    load_projects(this->project_files);
+    load_projects(this->projects);
 
     grid_shader.handle         = LoadShader(utils::path_abs("../src/shaders/grid.vert").c_str(), utils::path_abs("../src/shaders/grid.frag").c_str());
     grid_shader.camera_pos_loc = GetShaderLocation(grid_shader.handle, "camera_pos");
@@ -77,9 +79,10 @@ AppContext App::make_context()
     return AppContext{
         .dpi_scale     = ui.dpi_scale,
         .normal_font   = ui.normal_font,
+        .mdedium_font  = ui.medium_font,
         .header_font   = ui.header_font,
         .system        = &system,
-        .project_files = &project_files,
+        .projects = &projects,
         .camera        = &camera,
     };
 }

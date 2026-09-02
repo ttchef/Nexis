@@ -8,6 +8,7 @@
 #include <window.hpp>
 #include <app_state.hpp>
 #include <app_context.hpp>
+#include <project.hpp>
 
 #include <vector>
 
@@ -22,7 +23,7 @@ struct App
 	AppState state;
 	GridShader grid_shader;	
 
-	std::vector<std::string> project_files{};
+	std::vector<Project> projects{};
 
 	Window window;
 	ui::Context ui;

@@ -119,6 +119,7 @@ Context::Context(f32 dpi_scale)
     config.SizePixels = 16.0f * dpi_scale;
 
     normal_font = io.Fonts->AddFontFromFileTTF(utils::path_abs("../assets/fonts/ovelion.ttf").c_str(), 16.0f * dpi_scale, &config);
+    medium_font = io.Fonts->AddFontFromFileTTF(utils::path_abs("../assets/fonts/ovelion.ttf").c_str(), 22.0f * dpi_scale, &config);
     header_font = io.Fonts->AddFontFromFileTTF(utils::path_abs("../assets/fonts/ovelion.ttf").c_str(), 28.0f * dpi_scale, &config);
     
     io.FontDefault    = normal_font;
