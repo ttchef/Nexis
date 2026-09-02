@@ -26,10 +26,9 @@ static f32 scale_from_monitor()
 
 void load_projects(std::vector<Project> &projects)
 {
-    std::string project_path = utils::path_abs("projects");
-    if (!DirectoryExists(project_path.c_str()))
+    if (!DirectoryExists(global.project_path.c_str()))
     {
-        if (MakeDirectory(project_path.c_str()) != 0)
+        if (MakeDirectory(global.project_path.c_str()) != 0)
         {
             std::cout << "Failed to make projects directory" << std::endl;
             std::exit(1);
@@ -37,7 +36,7 @@ void load_projects(std::vector<Project> &projects)
         return;
     }
 
-    FilePathList files = LoadDirectoryFilesEx(project_path.c_str(), NEXIS_PF_EX, false);
+    FilePathList files = LoadDirectoryFilesEx(global.project_path.c_str(), NEXIS_PF_EX, false);
 
     projects.reserve(files.count);
     for (u32 i = 0; i < files.count; i++)
@@ -53,6 +52,7 @@ void load_projects(std::vector<Project> &projects)
 App::App()
     : state(AppState::ProjectExplorer), window(), ui(window.dpi_scale)
 {
+    global.init();
     // Native file dialog
     NFD::Init();
 
@@ -71,7 +71,7 @@ App::~App()
 
 bool App::should_close()
 {
-    return WindowShouldClose();
+    return WindowShouldClose() || state == AppState::Exit;
 }
 
 AppContext App::make_context()

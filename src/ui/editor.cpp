@@ -76,18 +76,20 @@ AppState Editor::draw(AppContext &ctx)
             }
             if (ImGui::MenuItem("Save"))
             {
+                ctx.project->write();
             }
 
             ImGui::Separator();
 
             if (ImGui::MenuItem("Exit"))
             {
+                state = AppState::Exit;
             }
 
             ImGui::EndMenu();
         }
 
-        ImGui::TextDisabled("Project %s", ctx.project->file_name.c_str());
+        ImGui::TextDisabled("Project: %s", ctx.project->file_name.c_str());
 
         ImGui::EndMainMenuBar();
     }

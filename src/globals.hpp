@@ -2,13 +2,20 @@
 
 #include <types.hpp>
 #include <random.hpp>
+#include <utils.hpp>
 
 struct Global
 {
     u32 window_width = 800;
     u32 window_height = 600;
+    std::string project_path;
 
     Random random;
+
+    void init()
+    {
+        project_path = utils::path_abs("projects");
+    }
 
     // returns true if the size changed
     bool update_window_size(u32 width, u32 height)

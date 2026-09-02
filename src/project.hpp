@@ -14,6 +14,9 @@ struct Project
 	i64 mod_time;
 
 	particle::System system;
+
+	void write();
+	void remove();
 };
 
 static const char *NEXIS_PF_EX = ".nxp";

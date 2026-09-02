@@ -15,7 +15,7 @@ static const char *format_time(i64 time)
     static char buffer[32];
 
     std::time_t mod_time = static_cast<std::time_t>(time);
-    std::tm *tm_info = std::localtime(&mod_time);
+    std::tm    *tm_info  = std::localtime(&mod_time);
     std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M", tm_info);
 
     return buffer;
@@ -89,22 +89,23 @@ AppState ProjectExplorer::draw(AppContext &ctx)
         ImGui::BeginDisabled(ctx.project->file_name.empty());
         if (ImGui::Button("Create Project"))
         {
+            ctx.project->file_path = std::format("{}/{}{}", global.project_path, ctx.project->file_name, NEXIS_PF_EX);
             state = AppState::Editor;
         }
         ImGui::EndDisabled();
-        
+
         ImGui::SameLine();
         ImGui::InputTextWithHint("##name", "Enter project name", &ctx.project->file_name);
 
-        ImGui::EndPopup(); 
+        ImGui::EndPopup();
     }
 
     for (u32 i = 0; i < ctx.projects->size(); i++)
     {
         auto &project = ctx.projects->at(i);
-        
+
         ImGui::PushID(i);
-        
+
         ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.0f * ctx.dpi_scale);
         ImGui::BeginChild("project_file", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY);
 
@@ -112,14 +113,19 @@ AppState ProjectExplorer::draw(AppContext &ctx)
         ImGui::Text("%s", project.file_name.c_str());
         ImGui::SameLine();
 
-        std::string last_modified = std::string("Last modified: ") + format_time(project.mod_time);
-        f32 last_modified_width = ImGui::CalcTextSize(last_modified.c_str()).x;
-        f32 available = ImGui::GetContentRegionAvail().x;
+        f32 button_width = ImGui::CalcTextSize("Delete").x + ImGui::GetStyle().FramePadding.x * 2.0f;
 
-        if (available > last_modified_width)
+        ImGui::SetCursorPosX(
+            ImGui::GetWindowWidth() - button_width - ImGui::GetStyle().WindowPadding.x);
+
+        if (ImGui::Button("Delete"))
         {
-            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + available - last_modified_width);
+            project.remove();
+            ctx.projects->erase(ctx.projects->begin() + i);
         }
+
+        std::string last_modified =
+            std::string("Last modified: ") + format_time(project.mod_time);
         ImGui::TextDisabled("%s", last_modified.c_str());
 
         ImGui::PopFont();
@@ -129,9 +135,9 @@ AppState ProjectExplorer::draw(AppContext &ctx)
         if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
         {
             *ctx.project = project;
-            state = AppState::Editor;
+            state        = AppState::Editor;
         }
-        
+
         ImGui::PopStyleVar();
         ImGui::PopID();
     }

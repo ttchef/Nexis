@@ -2,6 +2,7 @@
 
 enum class AppState
 {
+	Exit,
 	ProjectExplorer,
 	Editor,	
 };
