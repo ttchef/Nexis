@@ -63,6 +63,7 @@ set(SRC_FILES
     src/globals.cpp
     src/particle.cpp
     src/project.cpp
+    src/utils.cpp
     src/ui/context.cpp
     src/ui/editor.cpp
     src/ui/project_explorer.cpp

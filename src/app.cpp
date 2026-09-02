@@ -4,8 +4,6 @@
 #include <ui/context.hpp>
 #include <utils.hpp>
 
-#include <iostream>
-
 #include <nfd.hpp>
 
 static f32 scale_from_monitor()
@@ -24,31 +22,6 @@ static f32 scale_from_monitor()
     return dots_per_inc / 96.0f;
 }
 
-void load_projects(std::vector<Project> &projects)
-{
-    if (!DirectoryExists(global.project_path.c_str()))
-    {
-        if (MakeDirectory(global.project_path.c_str()) != 0)
-        {
-            std::cout << "Failed to make projects directory" << std::endl;
-            std::exit(1);
-        }
-        return;
-    }
-
-    FilePathList files = LoadDirectoryFilesEx(global.project_path.c_str(), NEXIS_PF_EX, false);
-
-    projects.reserve(files.count);
-    for (u32 i = 0; i < files.count; i++)
-    {
-        projects.push_back({
-            .file_path = files.paths[i],
-            .file_name = GetFileNameWithoutExt(files.paths[i]),
-            .mod_time  = GetFileModTime(files.paths[i]),
-        });
-    }
-}
-
 App::App()
     : state(AppState::ProjectExplorer), window(), ui(window.dpi_scale)
 {
@@ -56,7 +29,7 @@ App::App()
     // Native file dialog
     NFD::Init();
 
-    load_projects(this->projects);
+    utils::load_projects(&projects);
 
     grid_shader.handle         = LoadShader(utils::path_abs("../src/shaders/grid.vert").c_str(), utils::path_abs("../src/shaders/grid.frag").c_str());
     grid_shader.camera_pos_loc = GetShaderLocation(grid_shader.handle, "camera_pos");

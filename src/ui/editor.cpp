@@ -71,6 +71,7 @@ AppState Editor::draw(AppContext &ctx)
         {
             if (ImGui::MenuItem("Home"))
             {
+                utils::load_projects(ctx.projects);
                 state = AppState::ProjectExplorer;
                 *ctx.project = Project();
             }
