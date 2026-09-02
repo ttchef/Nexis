@@ -59,7 +59,7 @@ Editor::Editor()
     add_emitter          = particle::Emitter{};
 }
 
-AppState Editor::draw(particle::System &system, f32 dpi_scale)
+AppState Editor::draw(AppContext &ctx)
 {
     setup_editor_dockspace();
 
@@ -78,7 +78,7 @@ AppState Editor::draw(particle::System &system, f32 dpi_scale)
         ImGui::BeginDisabled(!can_create);
         if (ImGui::Button("Create Emitter"))
         {
-            system.emitters.push_back(add_emitter);
+            ctx.system->emitters.push_back(add_emitter);
             add_emitter = particle::Emitter();
             ImGui::CloseCurrentPopup();
         }
@@ -87,9 +87,9 @@ AppState Editor::draw(particle::System &system, f32 dpi_scale)
         ImGui::EndPopup();
     }
 
-    for (u32 i = 0; i < system.emitters.size(); i++)
+    for (u32 i = 0; i < ctx.system->emitters.size(); i++)
     {
-        auto &e = system.emitters[i];
+        auto &e = ctx.system->emitters[i];
 
         ImGui::PushID(i);
 
@@ -98,7 +98,7 @@ AppState Editor::draw(particle::System &system, f32 dpi_scale)
 
         if (ImGui::CollapsingHeader(e.name.c_str()))
         {
-            ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.0f * dpi_scale);
+            ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.0f * ctx.dpi_scale);
             ImGui::BeginChild("emitter_container", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY);
 
             ImGui::SeparatorText("Motion");
@@ -124,7 +124,7 @@ AppState Editor::draw(particle::System &system, f32 dpi_scale)
 
                 bool open = ImGui::TreeNodeEx("##node", ImGuiTreeNodeFlags_None, "%s", force.name());
 
-                ImGui::SameLine(ImGui::GetContentRegionAvail().x - 12.0f * dpi_scale);
+                ImGui::SameLine(ImGui::GetContentRegionAvail().x - 12.0f * ctx.dpi_scale);
                 if (ImGui::SmallButton("x"))
                 {
                     force_to_remove = i;

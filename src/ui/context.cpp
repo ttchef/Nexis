@@ -130,7 +130,7 @@ Context::~Context()
     rlImGuiShutdown();
 }
 
-AppState Context::draw(particle::System &system, AppState state)
+AppState Context::draw(AppState state, AppContext &ctx)
 {
     rlImGuiBegin();
 
@@ -139,11 +139,11 @@ AppState Context::draw(particle::System &system, AppState state)
     {
     case AppState::ProjectExplorer:
     {
-        new_state = explorer.draw(dpi_scale, header_font);
+        new_state = explorer.draw(ctx);
     } break;
     case AppState::Editor:
     {
-        new_state = editor.draw(system, dpi_scale);
+        new_state = editor.draw(ctx);
     } break;
     }
 

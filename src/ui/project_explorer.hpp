@@ -2,6 +2,7 @@
 
 #include <types.hpp>
 #include <app_state.hpp>
+#include <app_context.hpp>
 
 struct ImFont;
 
@@ -9,6 +10,6 @@ namespace ui
 {
 struct ProjectExplorer
 {
-	AppState draw(f32 dpi_scale, ImFont *header_font);
+	AppState draw(AppContext &ctx);
 };
 } // namespace ui

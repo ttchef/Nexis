@@ -7,6 +7,9 @@
 #include <ui/context.hpp>
 #include <window.hpp>
 #include <app_state.hpp>
+#include <app_context.hpp>
+
+#include <vector>
 
 struct GridShader
 {
@@ -19,6 +22,8 @@ struct App
 	AppState state;
 	GridShader grid_shader;	
 
+	std::vector<std::string> project_files{};
+
 	Window window;
 	ui::Context ui;
 
@@ -29,7 +34,9 @@ struct App
 
 	App();
 	~App();
+
 	bool should_close();
 	void update();
 	void draw();
+	AppContext make_context();
 };

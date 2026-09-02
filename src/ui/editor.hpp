@@ -3,6 +3,7 @@
 #include <types.hpp>
 #include <particle.hpp>
 #include <app_state.hpp>
+#include <app_context.hpp>
 
 #include <raylib.h>
 
@@ -17,6 +18,6 @@ struct Editor
     particle::Emitter add_emitter;
 
     Editor();
-    AppState draw(particle::System &system, f32 dpi_scale);
+    AppState draw(AppContext &ctx);
 };
 } // namespace ui
