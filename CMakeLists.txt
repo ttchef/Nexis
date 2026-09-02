@@ -60,9 +60,11 @@ target_link_libraries(rlimgui PUBLIC
 set(SRC_FILES
     src/main.cpp
     src/app.cpp
-    src/ui.cpp
     src/globals.cpp
     src/particle.cpp
+    src/ui/context.cpp
+    src/ui/editor.cpp
+    src/ui/project_explorer.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SRC_FILES})

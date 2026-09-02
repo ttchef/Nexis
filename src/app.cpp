@@ -1,7 +1,7 @@
 
 #include <app.hpp>
 #include <globals.hpp>
-#include <ui.hpp>
+#include <ui/context.hpp>
 
 #include <nfd.hpp>
 
@@ -22,7 +22,7 @@ static f32 scale_from_monitor()
 }
 
 App::App()
- : window(), ui(window.dpi_scale)
+    : state(AppState::ProjectExplorer), window(), ui(window.dpi_scale)
 {
     // Native file dialog
     NFD::Init();
@@ -49,31 +49,42 @@ void App::update()
     global.update_window_size(GetScreenWidth(), GetScreenHeight());
     f32 dt = GetFrameTime();
 
-    camera.update(ui.scene_texture_active, dt);
+    camera.update(ui.editor.scene_texture_active, dt);
     SetShaderValue(grid_shader.handle, grid_shader.camera_pos_loc, &camera.raylib.position, SHADER_UNIFORM_VEC3);
 
-    system.update(dt);
+    if (state == AppState::Editor)
+    {
+        system.update(dt);
+    }
 }
 
-void App::draw()
+static void scene_draw(App &app)
 {
-    BeginTextureMode(ui.scene);
+    BeginTextureMode(app.ui.editor.scene);
     ClearBackground(BLACK);
 
-    BeginMode3D(camera.raylib);
+    BeginMode3D(app.camera.raylib);
 
-    BeginShaderMode(grid_shader.handle);
+    BeginShaderMode(app.grid_shader.handle);
     DrawPlane({0.0f, 0.0f, 0.0f}, {100.0f, 100.0f}, RED);
 
     EndShaderMode();
 
-    system.draw(camera);
+    app.system.draw(app.camera);
 
     EndMode3D();
     EndTextureMode();
+}
+
+void App::draw()
+{
+    if (state == AppState::Editor)
+    {
+        scene_draw(*this);
+    }
 
     BeginDrawing();
     ClearBackground(BLACK);
-    ui.compute(system.emitters);
+    state = ui.draw(system, state);
     EndDrawing();
 }

@@ -1,111 +1,16 @@
 
-#include <ui.hpp>
+#include <ui/editor.hpp>
+#include <ui/widgets.hpp>
+
+#include <iostream>
 
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <misc/cpp/imgui_stdlib.cpp>
 #include <misc/cpp/imgui_stdlib.h>
 #include <nfd.hpp>
-#include <rlImGui.h>
 
-#include <iostream>
-
-// https://github.com/ocornut/imgui/issues/707
-static void setup_style(ImGuiStyle &style)
-{
-    ImVec4 *colors = style.Colors;
-
-    // --- 1. Sizing and Spacing (Clean & Balanced) ---
-    style.WindowPadding = ImVec2(10.0f, 10.0f);
-    style.FramePadding  = ImVec2(6.0f, 4.0f);
-    style.ItemSpacing   = ImVec2(8.0f, 6.0f);
-    style.ScrollbarSize = 14.0f;
-    style.GrabMinSize   = 12.0f;
-
-    // --- 2. Borders & Rounding ---
-    style.WindowRounding    = 6.0f;
-    style.FrameRounding     = 4.0f;
-    style.PopupRounding     = 4.0f;
-    style.ScrollbarRounding = 12.0f;
-    style.GrabRounding      = 4.0f;
-    style.TabRounding       = 4.0f;
-
-    style.WindowBorderSize = 1.0f;
-    style.FrameBorderSize  = 1.0f;
-
-    // --- 3. The Dracula Color Palette ---
-    // Background: #282a36 | Selection: #44475a | Foreground: #f8f8f2
-    // Comment: #6272a4    | Cyan: #8be9fd      | Green: #50fa7b
-    // Orange: #ffb86c     | Pink: #ff79c6      | Purple: #bd93f9
-    // Red: #ff5555        | Yellow: #f1fa8c
-
-    // Text
-    colors[ImGuiCol_Text]         = ImVec4(0.97f, 0.97f, 0.95f, 1.00f); // #f8f8f2
-    colors[ImGuiCol_TextDisabled] = ImVec4(0.38f, 0.45f, 0.64f, 1.00f); // #6272a4
-
-    // Backgrounds
-    colors[ImGuiCol_WindowBg] = ImVec4(0.16f, 0.16f, 0.21f, 1.00f); // #282a36
-    colors[ImGuiCol_ChildBg]  = ImVec4(0.16f, 0.16f, 0.21f, 0.00f);
-    colors[ImGuiCol_PopupBg]  = ImVec4(0.16f, 0.16f, 0.21f, 0.96f);
-
-    // Borders
-    colors[ImGuiCol_Border]       = ImVec4(0.27f, 0.28f, 0.35f, 1.00f); // #44475a
-    colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-
-    // Frames (Inputs, etc.)
-    colors[ImGuiCol_FrameBg]        = ImVec4(0.27f, 0.28f, 0.35f, 1.00f); // #44475a
-    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.38f, 0.45f, 0.64f, 1.00f); // #6272a4
-    colors[ImGuiCol_FrameBgActive]  = ImVec4(0.48f, 0.55f, 0.74f, 1.00f);
-
-    // Title Bars
-    colors[ImGuiCol_TitleBg]          = ImVec4(0.13f, 0.14f, 0.18f, 1.00f); // Darker
-    colors[ImGuiCol_TitleBgActive]    = ImVec4(0.16f, 0.16f, 0.21f, 1.00f);
-    colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.13f, 0.14f, 0.18f, 1.00f);
-
-    // Menus
-    colors[ImGuiCol_MenuBarBg] = ImVec4(0.13f, 0.14f, 0.18f, 1.00f);
-
-    // Scrollbars
-    colors[ImGuiCol_ScrollbarBg]          = ImVec4(0.16f, 0.16f, 0.21f, 1.00f);
-    colors[ImGuiCol_ScrollbarGrab]        = ImVec4(0.27f, 0.28f, 0.35f, 1.00f);
-    colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.38f, 0.45f, 0.64f, 1.00f);
-    colors[ImGuiCol_ScrollbarGrabActive]  = ImVec4(0.48f, 0.55f, 0.74f, 1.00f);
-
-    // Interactables
-    colors[ImGuiCol_CheckMark]        = ImVec4(0.31f, 0.98f, 0.48f, 1.00f); // #50fa7b (Green)
-    colors[ImGuiCol_SliderGrab]       = ImVec4(0.74f, 0.58f, 0.98f, 1.00f); // #bd93f9 (Purple)
-    colors[ImGuiCol_SliderGrabActive] = ImVec4(0.84f, 0.68f, 1.00f, 1.00f);
-    colors[ImGuiCol_Button]           = ImVec4(0.27f, 0.28f, 0.35f, 1.00f);
-    colors[ImGuiCol_ButtonHovered]    = ImVec4(1.00f, 0.47f, 0.78f, 1.00f); // #ff79c6 (Pink)
-    colors[ImGuiCol_ButtonActive]     = ImVec4(0.80f, 0.37f, 0.62f, 1.00f);
-    colors[ImGuiCol_Header]           = ImVec4(0.27f, 0.28f, 0.35f, 1.00f);
-    colors[ImGuiCol_HeaderHovered]    = ImVec4(0.38f, 0.45f, 0.64f, 1.00f);
-    colors[ImGuiCol_HeaderActive]     = ImVec4(0.48f, 0.55f, 0.74f, 1.00f);
-
-    // Tabs
-    colors[ImGuiCol_Tab]                = ImVec4(0.16f, 0.16f, 0.21f, 1.00f);
-    colors[ImGuiCol_TabHovered]         = ImVec4(0.27f, 0.28f, 0.35f, 1.00f);
-    colors[ImGuiCol_TabActive]          = ImVec4(0.27f, 0.28f, 0.35f, 1.00f);
-    colors[ImGuiCol_TabUnfocused]       = ImVec4(0.13f, 0.14f, 0.18f, 1.00f);
-    colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.16f, 0.16f, 0.21f, 1.00f);
-
-    // Tables
-    colors[ImGuiCol_TableHeaderBg]     = ImVec4(0.27f, 0.28f, 0.35f, 1.00f);
-    colors[ImGuiCol_TableBorderStrong] = ImVec4(0.38f, 0.45f, 0.64f, 1.00f);
-    colors[ImGuiCol_TableBorderLight]  = ImVec4(0.27f, 0.28f, 0.35f, 1.00f);
-
-    // Misc
-    colors[ImGuiCol_PlotLines]      = ImVec4(0.55f, 0.91f, 0.99f, 1.00f); // #8be9fd (Cyan)
-    colors[ImGuiCol_TextSelectedBg] = ImVec4(0.27f, 0.28f, 0.35f, 1.00f);
-    colors[ImGuiCol_NavHighlight]   = ImVec4(0.74f, 0.58f, 0.98f, 1.00f);
-
-#ifdef IMGUI_HAS_DOCK
-    colors[ImGuiCol_DockingPreview] = ImVec4(0.74f, 0.58f, 0.98f, 0.50f);
-    colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.16f, 0.16f, 0.21f, 1.00f);
-#endif
-}
-
-static void setup_dockspace()
+static void setup_editor_dockspace()
 {
     ImGuiViewport *viewport = ImGui::GetMainViewport();
 
@@ -146,72 +51,18 @@ static void setup_dockspace()
     ImGui::End();
 }
 
-ui::Context::Context(f32 dpi_scale)
-    : dpi_scale(dpi_scale)
+namespace ui
 {
-    rlImGuiSetup(true);
-
-    ImGuiIO &io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
-    ImGuiStyle &style = ImGui::GetStyle();
-    setup_style(style);
-    style.ScaleAllSizes(dpi_scale);
-
-    ImFontConfig config;
-    config.SizePixels = 16.0f * dpi_scale;
-    // TODO: Absolute path
-    auto default_font = io.Fonts->AddFontFromFileTTF("assets/fonts/ovelion.ttf", 16.0f * dpi_scale, &config);
-    io.FontDefault    = default_font;
-    io.Fonts->Build();
-
-    // Init members
+Editor::Editor()
+{
     scene                = LoadRenderTexture(2560, 1440);
     scene_texture_active = false;
+    add_emitter          = particle::Emitter{};
 }
 
-ui::Context::~Context()
+AppState Editor::draw(particle::System &system, f32 dpi_scale)
 {
-    rlImGuiShutdown();
-}
-
-static bool DragRandomFloat(const char *label, RandomF32 &r, f32 speed = 0.05f, f32 min = 0.0f)
-{
-    bool changed = false;
-
-    ImGui::PushID(label);
-
-    ImGui::SetNextItemWidth(ImGui::CalcItemWidth() * 0.55f);
-    changed |= ImGui::DragFloat("##base", &r.value, speed);
-    if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Right))
-    {
-        ImGui::SetTooltip("%s", "Actual value");
-    }
-
-    ImGui::SameLine(0.0f, 4.0f);
-    ImGui::SetNextItemWidth(ImGui::CalcItemWidth() * 0.35f);
-    changed |= ImGui::DragFloat("##offset", &r.offset, speed);
-    if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Right))
-    {
-        ImGui::SetTooltip("%s", "Offset range for random values");
-    }
-
-    ImGui::SameLine();
-    ImGui::TextUnformatted(label);
-
-    r.value  = std::max(r.value, min);
-    r.offset = std::max(r.offset, 0.0f);
-
-    ImGui::PopID();
-
-    return changed;
-}
-
-void ui::Context::compute(std::vector<particle::Emitter> &emitters)
-{
-    rlImGuiBegin();
-
-    setup_dockspace();
+    setup_editor_dockspace();
 
     ImGui::Begin("Settings");
 
@@ -228,7 +79,7 @@ void ui::Context::compute(std::vector<particle::Emitter> &emitters)
         ImGui::BeginDisabled(!can_create);
         if (ImGui::Button("Create Emitter"))
         {
-            emitters.push_back(add_emitter);
+            system.emitters.push_back(add_emitter);
             add_emitter = particle::Emitter();
             ImGui::CloseCurrentPopup();
         }
@@ -237,9 +88,9 @@ void ui::Context::compute(std::vector<particle::Emitter> &emitters)
         ImGui::EndPopup();
     }
 
-    for (u32 i = 0; i < emitters.size(); i++)
+    for (u32 i = 0; i < system.emitters.size(); i++)
     {
-        auto &e = emitters[i];
+        auto &e = system.emitters[i];
 
         ImGui::PushID(i);
 
@@ -256,7 +107,7 @@ void ui::Context::compute(std::vector<particle::Emitter> &emitters)
             ImGui::DragFloat("Emitter speed", &e.speed, 0.05f);
             e.speed = std::max(e.speed, 0.0f);
 
-            DragRandomFloat("Particle lifetime", e.lifetime);
+            widgets::DragRandomFloat("Particle lifetime", e.lifetime);
 
             ImGui::DragFloat3("Direction", &e.direction.x, 0.05f);
 
@@ -332,8 +183,8 @@ void ui::Context::compute(std::vector<particle::Emitter> &emitters)
             ImGui::ColorEdit4("Birth Color", static_cast<f32 *>(&e.birth_color.x), ImGuiColorEditFlags_AlphaBar);
             ImGui::ColorEdit4("Death Color", static_cast<f32 *>(&e.death_color.x), ImGuiColorEditFlags_AlphaBar);
 
-            DragRandomFloat("Birth Size", e.birth_size);
-            DragRandomFloat("Death Size", e.death_size);
+            widgets::DragRandomFloat("Birth Size", e.birth_size);
+            widgets::DragRandomFloat("Death Size", e.death_size);
 
             ImGui::Combo("Blend Mode", reinterpret_cast<i32 *>(&e.blending), particle::emitter_blending_names, ARRAY_COUNT(particle::emitter_blending_names));
 
@@ -450,5 +301,6 @@ void ui::Context::compute(std::vector<particle::Emitter> &emitters)
     }
     ImGui::End();
 
-    rlImGuiEnd();
+    return AppState::Editor;
 }
+} // namespace ui

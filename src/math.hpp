@@ -4,8 +4,6 @@
 #include <types.hpp>
 
 #include <cfloat>
-// I have no idea where max is and i dont care right now all i know
-// is that this provides max
 #include <algorithm>
 
 // Will probaly be removed later anyways

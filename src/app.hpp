@@ -4,14 +4,9 @@
 #include <types.hpp>
 #include <particle.hpp>
 #include <camera.hpp>
-#include <ui.hpp>
+#include <ui/context.hpp>
 #include <window.hpp>
-
-enum class AppState
-{
-	ProjectExplorer,
-	Editor,	
-};
+#include <app_state.hpp>
 
 struct GridShader
 {
@@ -21,7 +16,7 @@ struct GridShader
 
 struct App
 {
-	AppState state = AppState::ProjectExplorer;
+	AppState state;
 	GridShader grid_shader;	
 
 	Window window;
