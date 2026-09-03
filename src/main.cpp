@@ -1,8 +1,6 @@
 
 #include <app.hpp>
 
-#include <utils.hpp>
-
 i32 main()
 {
     auto app = new App{};

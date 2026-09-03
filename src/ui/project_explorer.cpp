@@ -49,14 +49,10 @@ static void setup_explorer_dockspace()
         ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
         ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->WorkSize);
 
-        ImGuiID dock_picture_id  = dockspace_id;
-        ImGuiID dock_projects_id = ImGui::DockBuilderSplitNode(dock_picture_id, ImGuiDir_Right, 0.50f, nullptr, &dock_picture_id);
+        ImGuiID dock_projects_id = dockspace_id;
 
         ImGui::DockBuilderDockWindow("Projects", dock_projects_id);
-        ImGui::DockBuilderDockWindow("Picture", dock_picture_id);
-
         ImGui::DockBuilderGetNode(dock_projects_id)->LocalFlags |= ImGuiDockNodeFlags_HiddenTabBar;
-        ImGui::DockBuilderGetNode(dock_picture_id)->LocalFlags |= ImGuiDockNodeFlags_HiddenTabBar;
 
         ImGui::DockBuilderFinish(dockspace_id);
     }
@@ -67,6 +63,19 @@ static void setup_explorer_dockspace()
 
 namespace ui
 {
+ProjectExplorer::ProjectExplorer()
+{
+    wallpaper = LoadTexture(utils::path_abs("../assets/textures/wallpaper.png").c_str());
+}
+
+ProjectExplorer::~ProjectExplorer()
+{
+    if (wallpaper.id)
+    {
+        UnloadTexture(wallpaper);
+    }
+}
+
 AppState ProjectExplorer::draw(AppContext &ctx)
 {
     AppState state = AppState::ProjectExplorer;
@@ -75,76 +84,101 @@ AppState ProjectExplorer::draw(AppContext &ctx)
 
     ImGui::Begin("Projects", nullptr, ImGuiWindowFlags_NoTitleBar);
 
-    ImGui::PushFont(ctx.header_font);
-    ImGui::SeparatorText("Projects");
-    ImGui::PopFont();
-
-    if (ImGui::Button("New Project", ImVec2(-FLT_MIN, 0)))
+    if (ImGui::BeginTable("layout", 2, ImGuiTableFlags_SizingStretchSame))
     {
-        ImGui::OpenPopup("add_project");
-    }
+        ImGui::TableSetupColumn("wallpaper");
+        ImGui::TableSetupColumn("projects");
 
-    if (ImGui::BeginPopup("add_project"))
-    {
-        ImGui::BeginDisabled(ctx.project->file_name.empty());
-        if (ImGui::Button("Create Project"))
+        ImGui::TableNextRow();
+
+        ImGui::TableSetColumnIndex(0);
+
+        const f32 image_aspect = static_cast<f32>(wallpaper.width) / static_cast<f32>(wallpaper.height);
+        ImVec2 available = ImGui::GetContentRegionAvail();
+
+        f32 image_width  = available.x;
+        f32 image_height = image_width / image_aspect;
+
+        if (image_height > available.y)
         {
-            ctx.project->file_path = std::format("{}/{}{}", global.project_path, ctx.project->file_name, NEXIS_PF_EX);
-            state = AppState::Editor;
-        }
-        ImGui::EndDisabled();
-
-        ImGui::SameLine();
-        ImGui::InputTextWithHint("##name", "Enter project name", &ctx.project->file_name);
-
-        ImGui::EndPopup();
-    }
-
-    for (u32 i = 0; i < ctx.projects->size(); i++)
-    {
-        auto &project = ctx.projects->at(i);
-
-        ImGui::PushID(i);
-
-        ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.0f * ctx.dpi_scale);
-        ImGui::BeginChild("project_file", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY);
-
-        ImGui::PushFont(ctx.mdedium_font);
-        ImGui::Text("%s", project.file_name.c_str());
-        ImGui::SameLine();
-
-        f32 button_width = ImGui::CalcTextSize("Delete").x + ImGui::GetStyle().FramePadding.x * 2.0f;
-
-        ImGui::SetCursorPosX(
-            ImGui::GetWindowWidth() - button_width - ImGui::GetStyle().WindowPadding.x);
-
-        if (ImGui::Button("Delete"))
-        {
-            project.remove();
-            ctx.projects->erase(ctx.projects->begin() + i);
+            image_height = available.y;
+            image_width  = image_height * image_aspect;
         }
 
-        std::string last_modified =
-            std::string("Last modified: ") + format_time(project.mod_time);
-        ImGui::TextDisabled("%s", last_modified.c_str());
+        ImGui::Image(
+            (ImTextureID)wallpaper.id,
+            ImVec2(image_width, image_height));
 
+        ImGui::TableSetColumnIndex(1);
+        ImGui::PushFont(ctx.header_font);
+        ImGui::SeparatorText("Projects");
         ImGui::PopFont();
 
-        ImGui::EndChild();
-
-        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+        if (ImGui::Button("New Project", ImVec2(-FLT_MIN, 0)))
         {
-            *ctx.project = project;
-            state        = AppState::Editor;
+            ImGui::OpenPopup("add_project");
         }
 
-        ImGui::PopStyleVar();
-        ImGui::PopID();
+        if (ImGui::BeginPopup("add_project"))
+        {
+            ImGui::BeginDisabled(ctx.project->file_name.empty());
+            if (ImGui::Button("Create Project"))
+            {
+                ctx.project->file_path = std::format("{}/{}{}", global.project_path, ctx.project->file_name, NEXIS_PF_EX);
+                state                  = AppState::Editor;
+            }
+            ImGui::EndDisabled();
+
+            ImGui::SameLine();
+            ImGui::InputTextWithHint("##name", "Enter project name", &ctx.project->file_name);
+
+            ImGui::EndPopup();
+        }
+
+        for (u32 i = 0; i < ctx.projects->size(); i++)
+        {
+            auto &project = ctx.projects->at(i);
+
+            ImGui::PushID(i);
+
+            ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.0f * ctx.dpi_scale);
+            ImGui::BeginChild("project_file", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY);
+
+            ImGui::PushFont(ctx.mdedium_font);
+            ImGui::Text("%s", project.file_name.c_str());
+            ImGui::SameLine();
+
+            f32 button_width = ImGui::CalcTextSize("Delete").x + ImGui::GetStyle().FramePadding.x * 2.0f;
+
+            ImGui::SetCursorPosX(
+                ImGui::GetWindowWidth() - button_width - ImGui::GetStyle().WindowPadding.x);
+
+            if (ImGui::Button("Delete"))
+            {
+                project.remove();
+                ctx.projects->erase(ctx.projects->begin() + i);
+            }
+
+            std::string last_modified =
+                std::string("Last modified: ") + format_time(project.mod_time);
+            ImGui::TextDisabled("%s", last_modified.c_str());
+
+            ImGui::PopFont();
+
+            ImGui::EndChild();
+
+            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+            {
+                *ctx.project = project;
+                state        = AppState::Editor;
+            }
+
+            ImGui::PopStyleVar();
+            ImGui::PopID();
+        }
+
+        ImGui::EndTable();
     }
-
-    ImGui::End();
-
-    ImGui::Begin("Picture");
 
     ImGui::End();
 
