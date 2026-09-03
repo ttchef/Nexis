@@ -13,6 +13,7 @@ namespace ui
 struct ProjectExplorer
 {
 	Texture2D wallpaper;
+	i32 hovered_child;
 	
 	ProjectExplorer();
 	~ProjectExplorer();

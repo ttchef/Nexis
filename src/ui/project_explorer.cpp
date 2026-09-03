@@ -66,6 +66,7 @@ namespace ui
 ProjectExplorer::ProjectExplorer()
 {
     wallpaper = LoadTexture(utils::path_abs("../assets/textures/wallpaper.png").c_str());
+    hovered_child = -1;
 }
 
 ProjectExplorer::~ProjectExplorer()
@@ -94,7 +95,7 @@ AppState ProjectExplorer::draw(AppContext &ctx)
         ImGui::TableSetColumnIndex(0);
 
         const f32 image_aspect = static_cast<f32>(wallpaper.width) / static_cast<f32>(wallpaper.height);
-        ImVec2 available = ImGui::GetContentRegionAvail();
+        ImVec2    available    = ImGui::GetContentRegionAvail();
 
         f32 image_width  = available.x;
         f32 image_height = image_width / image_aspect;
@@ -141,6 +142,10 @@ AppState ProjectExplorer::draw(AppContext &ctx)
 
             ImGui::PushID(i);
 
+            if (hovered_child == i)
+            {
+                ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyleColorVec4(ImGuiCol_TabHovered));
+            }
             ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.0f * ctx.dpi_scale);
             ImGui::BeginChild("project_file", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY);
 
@@ -166,6 +171,16 @@ AppState ProjectExplorer::draw(AppContext &ctx)
             ImGui::PopFont();
 
             ImGui::EndChild();
+
+            if (hovered_child == i)
+            {
+                hovered_child = -1;
+                ImGui::PopStyleColor();
+            }
+            if (ImGui::IsItemHovered())
+            {
+                hovered_child = i;
+            }
 
             if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
             {
