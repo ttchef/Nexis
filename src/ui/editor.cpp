@@ -1,7 +1,9 @@
 
+#include <project.hpp>
 #include <ui/editor.hpp>
 #include <ui/widgets.hpp>
 
+#include <algorithm>
 #include <iostream>
 
 #include <imgui.h>
@@ -39,9 +41,11 @@ static void setup_editor_dockspace()
 
         ImGuiID dock_viewport_id = dockspace_id;
         ImGuiID dock_settings_id = ImGui::DockBuilderSplitNode(dock_viewport_id, ImGuiDir_Right, 0.30f, nullptr, &dock_viewport_id);
+        ImGuiID dock_assets_id   = ImGui::DockBuilderSplitNode(dock_viewport_id, ImGuiDir_Down, 0.30f, nullptr, &dock_viewport_id);
 
         ImGui::DockBuilderDockWindow("Settings", dock_settings_id);
         ImGui::DockBuilderDockWindow("Viewport", dock_viewport_id);
+        ImGui::DockBuilderDockWindow("Assets", dock_assets_id);
 
         ImGui::DockBuilderFinish(dockspace_id);
     }
@@ -62,7 +66,7 @@ Editor::Editor()
 AppState Editor::draw(AppContext &ctx)
 {
     AppState state = AppState::Editor;
-    
+
     setup_editor_dockspace();
 
     if (ImGui::BeginMainMenuBar())
@@ -72,7 +76,7 @@ AppState Editor::draw(AppContext &ctx)
             if (ImGui::MenuItem("Home"))
             {
                 utils::load_projects(ctx.projects);
-                state = AppState::ProjectExplorer;
+                state        = AppState::ProjectExplorer;
                 *ctx.project = Project();
             }
             if (ImGui::MenuItem("Save"))
@@ -219,45 +223,31 @@ AppState Editor::draw(AppContext &ctx)
 
             ImGui::Combo("Blend Mode", reinterpret_cast<i32 *>(&e.blending), particle::emitter_blending_names, ARRAY_COUNT(particle::emitter_blending_names));
 
-            if (ImGui::Button("Load Texture"))
+            ImVec2 texture_size = ImVec2(100.0f * ctx.dpi_scale, 100.0f * ctx.dpi_scale);
+            if (ImGui::BeginChild("texture", texture_size, ImGuiChildFlags_Borders))
             {
-                NFD::UniquePathN  out_path;
-                nfdu8filteritem_t filters[] = {
-                    {"Pictues", "png"},
-                };
-
-                if (NFD::OpenDialog(out_path, filters, ARRAY_COUNT(filters)) != NFD_OKAY)
+                auto tex = ctx.asset_manager->get_texture_handle(e.texture);
+                if (tex)
                 {
-                    std::cout << "Filedialog error: " << NFD::GetError() << std::endl;
+                    ImGui::Image(static_cast<ImTextureRef>(tex.value().id), ImGui::GetContentRegionAvail());
                 }
                 else
                 {
-                    if (e.texture && e.texture->id != 0)
-                    {
-                        UnloadTexture(e.texture.value());
-                    }
-                    e.texture_path = out_path.get();
-                    auto image     = LoadImage(e.texture_path.c_str());
-                    e.texture      = LoadTextureFromImage(image);
-                    UnloadImage(image);
+                    ImGui::Dummy(ImGui::GetContentRegionAvail());
                 }
-            }
-            if (e.texture)
-            {
-                ImGui::SameLine();
-                if (ImGui::Button("Unload Texture"))
+                if (ImGui::BeginDragDropTarget())
                 {
-                    UnloadTexture(e.texture.value());
-                    e.texture = std::optional<Texture2D>{};
-                    e.texture_path.clear();
+                    if (auto payload = ImGui::AcceptDragDropPayload("asset_texture"))
+                    {
+                        if (payload->DataSize == sizeof(asset::TextureHandle))
+                        {
+                            e.texture = *static_cast<asset::TextureHandle *>(payload->Data);
+                        }
+                    }
+                    ImGui::EndDragDropTarget();
                 }
             }
-            ImGui::SameLine();
-            ImGui::TextDisabled("Path: %s", e.texture_path.c_str());
-            if (ImGui::IsItemHovered() && !e.texture_path.empty())
-            {
-                ImGui::SetTooltip("%s", e.texture_path.c_str());
-            }
+            ImGui::EndChild();
 
             ImGui::SeparatorText("Emitter Shape");
 
@@ -330,6 +320,86 @@ AppState Editor::draw(AppContext &ctx)
     {
         scene_texture_active = false;
     }
+    ImGui::End();
+
+    ImGui::Begin("Assets");
+
+    const f32 item_width  = 150.0f * ctx.dpi_scale;
+    const f32 item_height = 150.0f * ctx.dpi_scale;
+    const f32 spacing     = ImGui::GetStyle().ItemSpacing.x;
+
+    f32 available_width = ImGui::GetContentRegionAvail().x;
+
+    u32 columns = std::max(static_cast<u32>((available_width + spacing) / (item_width + spacing)), 1u);
+    u32 index   = 0;
+
+    for (const auto &tex : ctx.asset_manager->textures)
+    {
+        ImGui::PushID(index);
+
+        ImGui::BeginChild("texture", ImVec2(item_width, item_height), ImGuiChildFlags_Borders);
+
+        ImVec2 size = ImGui::GetContentRegionAvail();
+
+        ImGui::InvisibleButton(
+            "drag_texture",
+            size);
+        if (ImGui::BeginDragDropSource())
+        {
+            auto hash = tex.hash();
+            ImGui::SetDragDropPayload("asset_texture", &hash, sizeof(hash));
+            ImGui::Image((ImTextureRef)tex.handle.id, ImVec2(64, 64));
+            ImGui::EndDragDropSource();
+        }
+
+        ImDrawList *draw_list = ImGui::GetWindowDrawList();
+
+        ImVec2 min = ImGui::GetItemRectMin();
+        ImVec2 max = ImGui::GetItemRectMax();
+
+        draw_list->AddImage(
+            (ImTextureID)tex.handle.id,
+            min,
+            max);
+        if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Right))
+        {
+            ImGui::SetTooltip("%s", tex.path.c_str());
+        }
+
+        ImGui::EndChild();
+
+        ImGui::PopID();
+        ++index;
+
+        if (index % columns != 0)
+        {
+            ImGui::SameLine();
+        }
+    }
+
+    // Add texture button
+    if (ImGui::BeginChild("add_texture", ImVec2(item_width, item_height), ImGuiChildFlags_Borders))
+    {
+        if (ImGui::Button("Add", ImVec2(-FLT_MIN, -FLT_MIN)))
+        {
+            NFD::UniquePathN  out_path;
+            nfdu8filteritem_t filters[] = {
+                {"Pictues", "png"},
+            };
+
+            if (NFD::OpenDialog(out_path, filters, ARRAY_COUNT(filters)) != NFD_OKAY)
+            {
+                std::cout << "Filedialog error: " << NFD::GetError() << std::endl;
+                std::exit(1);
+            }
+            else
+            {
+                ctx.asset_manager->load_texture(out_path.get());
+            }
+        }
+    }
+    ImGui::EndChild();
+
     ImGui::End();
 
     return state;

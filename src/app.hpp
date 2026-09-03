@@ -9,8 +9,7 @@
 #include <app_state.hpp>
 #include <app_context.hpp>
 #include <project.hpp>
-
-#include <vector>
+#include <asset_manager.hpp>
 
 struct GridShader
 {
@@ -28,6 +27,7 @@ struct App
 	Window window;
 	ui::Context ui;
 	SceneCamera camera{};
+	asset::Manager asset_manager{};
 	Project project{};
 
 	App();

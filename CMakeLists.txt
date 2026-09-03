@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.0)
+cmake_minimum_required(VERSION 3.15)
 project(Nexis VERSION 1.0.0 LANGUAGES CXX)
 
 include(FetchContent)
@@ -34,6 +34,7 @@ FetchContent_Declare(
     GIT_TAG fc168e8605bfa51aaec22ab0c4e46b9de665a437
 )
 
+set(FETCHCONTENT_QUIET OFF)
 FetchContent_MakeAvailable(raylib imgui rlimgui nfd)
 
 add_library(imgui STATIC
@@ -64,6 +65,7 @@ set(SRC_FILES
     src/particle.cpp
     src/project.cpp
     src/utils.cpp
+    src/asset_manager.cpp
     src/ui/context.cpp
     src/ui/editor.cpp
     src/ui/project_explorer.cpp

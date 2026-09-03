@@ -15,5 +15,7 @@ using u64 = std::uint64_t;
 using f32 = float;
 using f64 = double;
 
+using usize = std::size_t;
+
 #define ARRAY_COUNT(x) (sizeof(x) / sizeof((x)[0]))
 

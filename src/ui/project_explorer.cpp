@@ -1,5 +1,7 @@
 
 #include <ui/project_explorer.hpp>
+#include <utils.hpp>
+#include <project.hpp>
 
 #include <ctime>
 
@@ -65,7 +67,7 @@ namespace ui
 {
 ProjectExplorer::ProjectExplorer()
 {
-    wallpaper = LoadTexture(utils::path_abs("../assets/textures/wallpaper.png").c_str());
+    wallpaper     = LoadTexture(utils::path_abs("../assets/textures/wallpaper.png").c_str());
     hovered_child = -1;
 }
 
@@ -136,6 +138,7 @@ AppState ProjectExplorer::draw(AppContext &ctx)
             ImGui::EndPopup();
         }
 
+        i32 project_to_remove = -1;
         for (u32 i = 0; i < ctx.projects->size(); i++)
         {
             auto &project = ctx.projects->at(i);
@@ -160,8 +163,7 @@ AppState ProjectExplorer::draw(AppContext &ctx)
 
             if (ImGui::Button("Delete"))
             {
-                project.remove();
-                ctx.projects->erase(ctx.projects->begin() + i);
+                project_to_remove = i;
             }
 
             std::string last_modified =
@@ -190,6 +192,12 @@ AppState ProjectExplorer::draw(AppContext &ctx)
 
             ImGui::PopStyleVar();
             ImGui::PopID();
+        }
+
+        if (project_to_remove != -1)
+        {
+            ctx.projects->at(project_to_remove).remove();
+            ctx.projects->erase(ctx.projects->begin() + project_to_remove);
         }
 
         ImGui::EndTable();

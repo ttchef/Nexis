@@ -4,11 +4,10 @@
 #include <globals.hpp>
 #include <math.hpp>
 #include <types.hpp>
-#include <camera.hpp>
+#include <app_context.hpp>
+#include <asset_manager.hpp>
 
-#include <string>
 #include <variant>
-#include <vector>
 
 #include <raylib.h>
 
@@ -25,10 +24,10 @@ struct Particle
     f32                      lifetime;
     f32                      birth_size;
     f32                      death_size;
-    std::optional<Texture2D> texture;
+    asset::TextureHandle texture;
 
     void update(f32 dt);
-    void draw(const SceneCamera &camera) const;
+    void draw(AppContext &ctx) const;
 };
 
 struct EmitterShapeRectangle
@@ -95,8 +94,7 @@ struct Emitter
 
     math::Vec3 direction = {0.0f, 1.0f, 0.0f};
 
-    std::string              texture_path{};
-    std::optional<Texture2D> texture{};
+    asset::TextureHandle texture{};
 
     EmitterBlending blending = EmitterBlending::Opaque;
 
@@ -106,7 +104,7 @@ struct Emitter
     math::Vec3 get_force(math::Vec3 pos) const;
     void update(f32 dt);
     void draw_forcefield(u32 cell_count, f32 cell_size) const;
-    void draw(const SceneCamera &camera) const;
+    void draw(AppContext &ctx) const;
     
   private:
     f32 elapsed_time = 0.0f;
@@ -117,6 +115,6 @@ struct System
     std::vector<Emitter> emitters;
 
     void update(f32 dt);
-    void draw(const SceneCamera &camera) const;
+    void draw(AppContext &ctx) const;
 };
 } // namespace particle

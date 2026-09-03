@@ -4,6 +4,7 @@
 #include <types.hpp>
 
 #include <cfloat>
+#include <cmath>
 #include <algorithm>
 
 // Will probaly be removed later anyways
@@ -91,7 +92,7 @@ struct Vec3
         if (sq < FLT_EPSILON) {
             return 0.0f;
         }
-        return sq;
+        return std::sqrtf(sq);
     }
 
     Vec3 norm() const {

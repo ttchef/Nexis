@@ -2,13 +2,17 @@
 #pragma once
 
 #include <types.hpp>
-#include <particle.hpp>
-#include <camera.hpp>
-#include <project.hpp>
 
 #include <vector>
 
 struct ImFont;
+struct Project;
+struct SceneCamera;
+
+namespace asset
+{
+struct Manager;
+}
 
 struct AppContext
 {
@@ -20,4 +24,5 @@ struct AppContext
     Project *project;
     std::vector<Project> *projects;
     SceneCamera *camera;
+    asset::Manager *asset_manager;
 };

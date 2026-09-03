@@ -6,22 +6,6 @@
 
 #include <nfd.hpp>
 
-static f32 scale_from_monitor()
-{
-    i32 monitor  = GetCurrentMonitor();
-    i32 width_px = GetMonitorWidth(monitor);
-    i32 width_mm = GetMonitorPhysicalWidth(monitor);
-
-    if (width_mm <= 0)
-    {
-        return 1.0f;
-    }
-
-    f32 width_inches = width_mm / 25.4f;
-    f32 dots_per_inc = width_px / width_inches;
-    return dots_per_inc / 96.0f;
-}
-
 App::App()
     : state(AppState::ProjectExplorer), window(), ui(window.dpi_scale)
 {
@@ -57,6 +41,7 @@ AppContext App::make_context()
         .project      = &project,
         .projects     = &projects,
         .camera       = &camera,
+        .asset_manager = &asset_manager,
     };
 }
 
@@ -75,7 +60,7 @@ void App::update()
     }
 }
 
-static void scene_draw(App &app)
+static void scene_draw(App &app, AppContext &ctx)
 {
     BeginTextureMode(app.ui.editor.scene);
     ClearBackground(BLACK);
@@ -87,7 +72,7 @@ static void scene_draw(App &app)
 
     EndShaderMode();
 
-    app.project.system.draw(app.camera);
+    app.project.system.draw(ctx);
 
     EndMode3D();
     EndTextureMode();
@@ -98,7 +83,7 @@ void App::draw()
     AppContext ctx = make_context();
     if (state == AppState::Editor)
     {
-        scene_draw(*this);
+        scene_draw(*this, ctx);
     }
 
     BeginDrawing();

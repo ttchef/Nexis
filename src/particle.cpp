@@ -1,5 +1,6 @@
 
 #include <particle.hpp>
+#include <camera.hpp>
 
 #include <rlgl.h>
 
@@ -70,7 +71,7 @@ void Particle::update(f32 dt)
     age -= dt;
 }
 
-void Particle::draw(const SceneCamera &camera) const
+void Particle::draw(AppContext &ctx) const
 {
     f32 t = std::clamp(1.0f - (age / lifetime), 0.0f, 1.0f);
 
@@ -83,7 +84,11 @@ void Particle::draw(const SceneCamera &camera) const
     }
     else
     {
-        DrawBillboard(camera.raylib, texture.value(), {pos.x, pos.y, pos.z}, size, color.raylib_color());
+        auto tex = ctx.asset_manager->get_texture_handle(texture);
+        if (tex)
+        {
+            DrawBillboard(ctx.camera->raylib, tex.value(), {pos.x, pos.y, pos.z}, size, color.raylib_color());
+        }
     }
 }
 
@@ -218,13 +223,13 @@ void Emitter::draw_forcefield(u32 cell_count, f32 cell_size) const
 
                 Vec3 vec = get_force(pos);
 
-                DrawVector3D(pos, vec, YELLOW, BLUE);
+                DrawVector3D(pos, vec.norm() * 0.08f, YELLOW, BLUE);
             }
         }
     }
 }
 
-void Emitter::draw(const SceneCamera &camera) const
+void Emitter::draw(AppContext &ctx) const
 {
     if (!enabled)
     {
@@ -253,7 +258,7 @@ void Emitter::draw(const SceneCamera &camera) const
     }
     for (const auto &p : particles)
     {
-        p.draw(camera);
+        p.draw(ctx);
     }
     if (blending == EmitterBlending::Additive)
     {
@@ -270,11 +275,11 @@ void System::update(f32 dt)
     } 
 }
 
-void System::draw(const SceneCamera &camera) const
+void System::draw(AppContext &ctx) const
 {
     for (const auto &e : emitters)
     {
-        e.draw(camera);
+        e.draw(ctx);
     } 
 }
 } // namespace particle
