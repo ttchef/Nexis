@@ -10,23 +10,38 @@ static inline NxF32 Nx_lerp(NxF32 a, NxF32 b, NxF32 t)
     return t * b + (1.0f - t) * a;
 }
 
-struct NxVec2
+typedef struct
 {
     NxF32 x;
     NxF32 y;
-};
+} NxVec2;
 
-struct NxVec3
+typedef struct
 {
     NxF32 x;
     NxF32 y;
     NxF32 z;
-};
+} NxVec3;
 
-struct NxVec4
+static inline NxVec3 Nx_vec3(NxF32 x, NxF32 y, NxF32 z)
+{
+    return (NxVec3){x, y, z};
+}
+
+static inline NxVec3 Nx_vec3_add(NxVec3 a, NxVec3 b)
+{
+    return Nx_vec3(a.x + b.x, a.y + b.y, a.z + b.z);
+}
+
+static inline NxVec3 Nx_vec3_scale(NxVec3 v, NxF32 scalar)
+{
+    return Nx_vec3(v.x * scalar, v.y * scalar, v.z * scalar);
+}
+
+typedef struct
 {
     NxF32 x;
     NxF32 y;
     NxF32 z;
     NxF32 w;
-};
+} NxVec4;
