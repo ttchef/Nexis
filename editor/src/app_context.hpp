@@ -1,12 +1,15 @@
-// app_context.hpp
+
 #pragma once
 
 #include <types.hpp>
 
 #include <vector>
 
+#include <Nexis/core.h>
+
 struct ImFont;
 struct Project;
+struct ProjectHeader;
 struct SceneCamera;
 
 namespace asset
@@ -22,7 +25,8 @@ struct AppContext
     ImFont *header_font;
 
     Project *project;
-    std::vector<Project> *projects;
+    std::vector<ProjectHeader> *projects;
     SceneCamera *camera;
     asset::Manager *asset_manager;
 };
+

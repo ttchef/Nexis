@@ -1,15 +1,15 @@
 
 #include <app.hpp>
-#include <globals.hpp>
 #include <ui/context.hpp>
 #include <utils.hpp>
 
 #include <nfd.hpp>
 
+#include <nexis_backend_raylib.c>
+
 App::App()
     : state(AppState::ProjectExplorer), window(), ui(window.dpi_scale)
 {
-    global.init();
     // Native file dialog
     NFD::Init();
 
@@ -18,11 +18,17 @@ App::App()
     grid_shader.handle         = LoadShader(utils::path_abs("shaders/grid.vert").c_str(), utils::path_abs("shaders/grid.frag").c_str());
     grid_shader.camera_pos_loc = GetShaderLocation(grid_shader.handle, "camera_pos");
 
+    Nx_system_create(&project.system);
+    renderer = {
+        .particles_draw = Nx_backend_raylib_render,
+    };
+
     camera = SceneCamera{};
 }
 
 App::~App()
 {
+    Nx_system_destroy(&project.system);
     NFD::Quit();
 }
 
@@ -48,7 +54,7 @@ AppContext App::make_context()
 void App::update()
 {
     AppContext ctx = make_context();
-    global.update_window_size(GetScreenWidth(), GetScreenHeight());
+    window.update();
     f32 dt = GetFrameTime();
 
     camera.update(ui.editor.scene_texture_active, dt);
@@ -56,7 +62,7 @@ void App::update()
 
     if (state == AppState::Editor)
     {
-        project.system.update(dt);
+        Nx_system_update_emitters(&project.system, dt);
     }
 }
 
@@ -75,7 +81,7 @@ void App::draw()
 
         EndShaderMode();
 
-        project.system.draw(ctx);
+        Nx_system_render_emitters(&project.system, &renderer);
 
         EndMode3D();
         EndTextureMode();

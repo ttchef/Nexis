@@ -4,6 +4,7 @@
 #include <project.hpp>
 
 #include <ctime>
+#include <filesystem>
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -124,16 +125,16 @@ AppState ProjectExplorer::draw(AppContext &ctx)
 
         if (ImGui::BeginPopup("add_project"))
         {
-            ImGui::BeginDisabled(ctx.project->file_name.empty());
+            ImGui::BeginDisabled(ctx.project->header.file_name.empty());
             if (ImGui::Button("Create Project"))
             {
-                ctx.project->file_path = std::format("{}/{}{}", global.project_path, ctx.project->file_name, NEXIS_PF_EX);
+                ctx.project->header.file_path = std::format("{}/{}{}", utils::path_abs(PROJECT_PATH), ctx.project->header.file_name, NEXIS_PF_EX);
                 state                  = AppState::Editor;
             }
             ImGui::EndDisabled();
 
             ImGui::SameLine();
-            ImGui::InputTextWithHint("##name", "Enter project name", &ctx.project->file_name);
+            ImGui::InputTextWithHint("##name", "Enter project name", &ctx.project->header.file_name);
 
             ImGui::EndPopup();
         }
@@ -186,7 +187,7 @@ AppState ProjectExplorer::draw(AppContext &ctx)
 
             if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
             {
-                *ctx.project = project;
+                ctx.project->header = project;
                 state        = AppState::Editor;
             }
 
@@ -196,7 +197,7 @@ AppState ProjectExplorer::draw(AppContext &ctx)
 
         if (project_to_remove != -1)
         {
-            ctx.projects->at(project_to_remove).remove();
+            std::filesystem::remove(ctx.projects->at(project_to_remove).file_path);
             ctx.projects->erase(ctx.projects->begin() + project_to_remove);
         }
 

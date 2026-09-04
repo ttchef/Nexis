@@ -2,7 +2,6 @@
 #pragma once
 
 #include <types.hpp>
-#include <particle.hpp>
 #include <camera.hpp>
 #include <ui/context.hpp>
 #include <window.hpp>
@@ -10,6 +9,8 @@
 #include <app_context.hpp>
 #include <project.hpp>
 #include <asset_manager.hpp>
+
+#include <Nexis/core.h>
 
 struct GridShader
 {
@@ -23,13 +24,16 @@ private:
 	AppState state;
 	GridShader grid_shader;	
 
-	std::vector<Project> projects{};
+	std::vector<ProjectHeader> projects{};
 
 	Window window;
 	ui::Context ui;
 	SceneCamera camera{};
 	asset::Manager asset_manager{};
-	Project project{};
+	Project project;
+
+	NxRenderer renderer;
+
 public:
 	App();
 	~App();

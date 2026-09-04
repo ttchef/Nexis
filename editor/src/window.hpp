@@ -1,24 +1,34 @@
 #pragma once
 
-#include <globals.hpp>
 #include <types.hpp>
 
 #include <raylib.h>
 
 struct Window
 {
+    u32 width;
+    u32 height;
     f32 dpi_scale;
 
     Window()
     {
+        width = 800;
+        height = 600;
+        
         SetTraceLogLevel(LOG_WARNING);
         SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_HIGHDPI);
-        InitWindow(global.window_width, global.window_height, "Nexis");
+        InitWindow(width, height, "Nexis");
         SetExitKey(KEY_NULL);
         dpi_scale = compute_scale();
     }
 
     ~Window() { CloseWindow(); }
+
+    void update()
+    {
+        width = GetScreenWidth();
+        height = GetScreenHeight();
+    }
 
   private:
     static f32 compute_scale()

@@ -27,6 +27,8 @@ file(COPY ${CMAKE_SOURCE_DIR}/editor/src/shaders DESTINATION ${CMAKE_BINARY_DIR}
 add_executable(Nexis
     src/main.cpp
     src/app.cpp
+    src/utils.cpp
+    src/asset_manager.cpp
     src/ui/context.cpp
     src/ui/editor.cpp
     src/ui/project_explorer.cpp
@@ -35,6 +37,7 @@ add_executable(Nexis
 target_compile_features(Nexis PRIVATE cxx_std_23)
 target_include_directories(Nexis PRIVATE
     src
+    ../backends
     ${nfd_SOURCE_DIR}/src/include
 )
 
