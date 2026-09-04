@@ -125,13 +125,13 @@ AppState Editor::draw(AppContext &ctx)
 
     if (ImGui::BeginPopup("AddEmitterPopup"))
     {
-        bool can_create = std::strlen(add_emitter.name) == 0;
         ImGui::InputTextWithHint("##Emitter Name", "Emitter name...", add_emitter.name, sizeof(add_emitter.name));
+        bool can_create = std::strlen(add_emitter.name) != 0;
 
         ImGui::BeginDisabled(!can_create);
         if (ImGui::Button("Create Emitter"))
         {
-            Nx_system_add_emitter(ctx.system, &add_emitter);
+            Nx_system_add_emitter(&ctx.project->system, &add_emitter);
             add_emitter = NxEmitter{};
             ImGui::CloseCurrentPopup();
         }
@@ -140,7 +140,7 @@ AppState Editor::draw(AppContext &ctx)
         ImGui::EndPopup();
     }
 
-    for (u32 i = 0; i < Nx_system_emitter_count(ctx.system); i++)
+    for (u32 i = 0; i < Nx_system_emitter_count(&ctx.project->system); i++)
     {
         auto &e = ctx.project->system.emitters[i];
 

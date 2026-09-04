@@ -18,7 +18,7 @@ App::App()
     grid_shader.handle         = LoadShader(utils::path_abs("shaders/grid.vert").c_str(), utils::path_abs("shaders/grid.frag").c_str());
     grid_shader.camera_pos_loc = GetShaderLocation(grid_shader.handle, "camera_pos");
 
-    Nx_system_create(&system);
+    Nx_system_create(&project.system);
     renderer = {
         .particles_draw = Nx_backend_raylib_render,
     };
@@ -28,7 +28,7 @@ App::App()
 
 App::~App()
 {
-    Nx_system_destroy(&system);
+    Nx_system_destroy(&project.system);
     NFD::Quit();
 }
 
@@ -48,7 +48,6 @@ AppContext App::make_context()
         .projects      = &projects,
         .camera        = &camera,
         .asset_manager = &asset_manager,
-        .system        = &system,
     };
 }
 
@@ -63,7 +62,7 @@ void App::update()
 
     if (state == AppState::Editor)
     {
-        Nx_system_update_emitters(&system, dt);
+        Nx_system_update_emitters(&project.system, dt);
     }
 }
 
@@ -82,7 +81,7 @@ void App::draw()
 
         EndShaderMode();
 
-        Nx_system_render_emitters(&system, &renderer);
+        Nx_system_render_emitters(&project.system, &renderer);
 
         EndMode3D();
         EndTextureMode();

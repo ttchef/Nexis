@@ -28,6 +28,5 @@ struct AppContext
     std::vector<ProjectHeader> *projects;
     SceneCamera *camera;
     asset::Manager *asset_manager;
-    NxSystem *system;
 };
 

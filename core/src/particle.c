@@ -140,7 +140,7 @@ void Nx_system_add_emitter(NxSystem *system, NxEmitter *emitter)
         return;
     }
 
-    Nx_darray_push((void **)&system->emitters, &emitter);
+    Nx_darray_push((void **)&system->emitters, emitter);
 
     // NOTE: Emitter resources will be managed from the system now
     emitter->particles.positions     = NULL;
