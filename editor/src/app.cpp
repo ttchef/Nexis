@@ -5,6 +5,8 @@
 
 #include <nfd.hpp>
 
+#include <nexis_backend_raylib.c>
+
 App::App()
     : state(AppState::ProjectExplorer), window(), ui(window.dpi_scale)
 {
@@ -17,6 +19,9 @@ App::App()
     grid_shader.camera_pos_loc = GetShaderLocation(grid_shader.handle, "camera_pos");
 
     Nx_system_create(&system);
+    renderer = {
+          .particles_draw = Nx_backend_raylib_render,  
+    };
 
     camera = SceneCamera{};
 }
@@ -75,6 +80,8 @@ void App::draw()
         DrawPlane({0.0f, 0.0f, 0.0f}, {100.0f, 100.0f}, RED);
 
         EndShaderMode();
+
+        Nx_system_render_emitters(&system, &renderer);
 
         EndMode3D();
         EndTextureMode();

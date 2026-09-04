@@ -68,6 +68,7 @@ typedef enum
 typedef struct
 {
     NxParticles *particles;
+    NxU32 particle_count;
     NxBlending   blending;
 } NxParticleBatch;
 

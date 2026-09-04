@@ -31,7 +31,9 @@ private:
 	SceneCamera camera{};
 	asset::Manager asset_manager{};
 	Project project;
+
 	NxSystem system;
+	NxRenderer renderer;
 
 public:
 	App();

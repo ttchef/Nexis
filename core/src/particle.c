@@ -98,6 +98,7 @@ void Nx_emitter_render_particles(NxEmitter *emitter, NxRenderer *renderer)
 
     NxParticleBatch batch = {
         .particles = particles,
+        .particle_count = Nx_darray_len(particles->positions),
         .blending  = NxBlendingOpaque,
     };
 

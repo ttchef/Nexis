@@ -36,6 +36,7 @@ add_executable(Nexis
 target_compile_features(Nexis PRIVATE cxx_std_23)
 target_include_directories(Nexis PRIVATE
     src
+    ../backends
     ${nfd_SOURCE_DIR}/src/include
 )
 
