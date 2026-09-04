@@ -36,6 +36,7 @@ typedef enum
 typedef struct
 {
     NxParticles     particles;
+    NxChar          name[32];
     NxBool          enabled;
     NxTextureHandle texture;
     NxBlending      blending;

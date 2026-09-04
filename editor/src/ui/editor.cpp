@@ -7,10 +7,11 @@
 
 #include <algorithm>
 #include <iostream>
+#include <cstring>
 
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <misc/cpp/imgui_stdlib.h>
+// #include <misc/cpp/imgui_stdlib.h>
 #include <nfd.hpp>
 
 static const char *emitter_blending_names(NxBlending blending)
@@ -124,8 +125,8 @@ AppState Editor::draw(AppContext &ctx)
 
     if (ImGui::BeginPopup("AddEmitterPopup"))
     {
-        bool can_create = !add_emitter.name.empty();
-        ImGui::InputTextWithHint("##Emitter Name", "Emitter name...", &add_emitter.name);
+        bool can_create = std::strlen(add_emitter.name) == 0;
+        ImGui::InputTextWithHint("##Emitter Name", "Emitter name...", add_emitter.name, sizeof(add_emitter.name));
 
         ImGui::BeginDisabled(!can_create);
         if (ImGui::Button("Create Emitter"))
@@ -148,7 +149,7 @@ AppState Editor::draw(AppContext &ctx)
         ImGui::Checkbox("##enabled", &e.enabled);
         ImGui::SameLine();
 
-        if (ImGui::CollapsingHeader(e.name.c_str()))
+        if (ImGui::CollapsingHeader(e.name))
         {
             ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.0f * ctx.dpi_scale);
             ImGui::BeginChild("emitter_container", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY);
