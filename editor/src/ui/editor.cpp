@@ -221,7 +221,7 @@ AppState Editor::draw(AppContext &ctx)
             widgets::DragRandomFloat("Birth Size", e.birth_size);
             widgets::DragRandomFloat("Death Size", e.death_size);
 
-            ImGui::Combo("Blend Mode", reinterpret_cast<i32 *>(&e.blending), particle::emitter_blending_names, ARRAY_COUNT(particle::emitter_blending_names));
+            ImGui::Combo("Blend Mode", reinterpret_cast<i32 *>(&e.blending), particle::EMITTER_BLENDING_NAMES, ARRAY_COUNT(particle::EMITTER_BLENDING_NAMES));
 
             ImVec2 texture_size = ImVec2(100.0f * ctx.dpi_scale, 100.0f * ctx.dpi_scale);
             if (ImGui::BeginChild("texture", texture_size, ImGuiChildFlags_Borders))
@@ -306,11 +306,7 @@ AppState Editor::draw(AppContext &ctx)
 
     ImVec2 size{width, height};
 
-    ImGui::Image(
-        (ImTextureID)(uintptr_t)scene.texture.id,
-        size,
-        ImVec2(0, 1),
-        ImVec2(1, 0));
+    ImGui::Image(static_cast<ImTextureRef>(scene.texture.id), size, ImVec2(0, 1), ImVec2(1, 0));
 
     if (ImGui::IsItemClicked(ImGuiMouseButton_Middle))
     {
@@ -333,7 +329,7 @@ AppState Editor::draw(AppContext &ctx)
     u32 columns = std::max(static_cast<u32>((available_width + spacing) / (item_width + spacing)), 1u);
     u32 index   = 0;
 
-    for (const auto &tex : ctx.asset_manager->textures)
+    for (const auto &[key, tex] : ctx.asset_manager->textures)
     {
         ImGui::PushID(index);
 
@@ -341,9 +337,7 @@ AppState Editor::draw(AppContext &ctx)
 
         ImVec2 size = ImGui::GetContentRegionAvail();
 
-        ImGui::InvisibleButton(
-            "drag_texture",
-            size);
+            ImGui::InvisibleButton("drag_texture", size);
         if (ImGui::BeginDragDropSource())
         {
             auto hash = tex.hash();

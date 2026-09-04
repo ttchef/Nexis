@@ -67,7 +67,7 @@ namespace ui
 {
 ProjectExplorer::ProjectExplorer()
 {
-    wallpaper     = LoadTexture(utils::path_abs("../assets/textures/wallpaper.png").c_str());
+    wallpaper     = LoadTexture(utils::path_abs("assets/textures/wallpaper.png").c_str());
     hovered_child = -1;
 }
 
@@ -108,19 +108,19 @@ AppState ProjectExplorer::draw(AppContext &ctx)
             image_width  = image_height * image_aspect;
         }
 
-        ImGui::Image(
-            (ImTextureID)wallpaper.id,
-            ImVec2(image_width, image_height));
+        ImGui::Image((ImTextureID)wallpaper.id, ImVec2(image_width, image_height));
 
         ImGui::TableSetColumnIndex(1);
         ImGui::PushFont(ctx.header_font);
         ImGui::SeparatorText("Projects");
         ImGui::PopFont();
 
+        ImGui::PushFont(ctx.mdedium_font);
         if (ImGui::Button("New Project", ImVec2(-FLT_MIN, 0)))
         {
             ImGui::OpenPopup("add_project");
         }
+        ImGui::PopFont();
 
         if (ImGui::BeginPopup("add_project"))
         {

@@ -4,12 +4,13 @@
 #include <globals.hpp>
 #include <math.hpp>
 #include <types.hpp>
-#include <app_context.hpp>
 #include <asset_manager.hpp>
 
 #include <variant>
 
 #include <raylib.h>
+
+struct AppContext;
 
 namespace particle
 {
@@ -42,7 +43,7 @@ enum struct EmitterBlending : i32
     Additive,
 };
 
-static const char *emitter_blending_names[] = {
+static const char *EMITTER_BLENDING_NAMES[] = {
     "Opaque",
     "Additive",
 };
@@ -118,3 +119,4 @@ struct System
     void draw(AppContext &ctx) const;
 };
 } // namespace particle
+

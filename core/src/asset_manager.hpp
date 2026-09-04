@@ -3,7 +3,7 @@
 
 #include <types.hpp>
 
-#include <vector>
+#include <unordered_map>
 #include <string>
 #include <optional>
 
@@ -25,7 +25,7 @@ struct Texture
 
 struct Manager
 {
-	std::vector<Texture> textures;
+	std::unordered_map<TextureHandle, Texture> textures;
 
 	~Manager();
 

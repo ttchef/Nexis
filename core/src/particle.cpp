@@ -1,10 +1,16 @@
 
-#include <particle.hpp>
 #include <camera.hpp>
+#include <particle.hpp>
+#include <app_context.hpp>
 
 #include <rlgl.h>
 
 using namespace math;
+
+static Color raylib_color(Vec4 c) {
+    return {static_cast<u8>(c.x * 255), static_cast<u8>(c.y  * 255), static_cast<u8>(c.z * 255), static_cast<u8>(c.w * 255)};
+}
+
 
 // Temporary
 static void DrawCubeWiresThick(Vector3 position, float width, float height, float length, float thickness, Color color)
@@ -40,7 +46,9 @@ static void DrawCubeWiresThick(Vector3 position, float width, float height, floa
     };
 
     for (auto &e : edges)
+    {
         DrawCylinderEx(corners[e[0]], corners[e[1]], thickness, thickness, 6, color);
+    }
 }
 
 static void DrawVector3D(Vec3 pos, Vec3 vec, Color body_color, Color tip_color, float thickness = 0.02f)
@@ -80,14 +88,14 @@ void Particle::draw(AppContext &ctx) const
 
     if (!texture)
     {
-        DrawSphere({pos.x, pos.y, pos.z}, size, color.raylib_color());
+        DrawSphere({pos.x, pos.y, pos.z}, size, raylib_color(color));
     }
     else
     {
         auto tex = ctx.asset_manager->get_texture_handle(texture);
         if (tex)
         {
-            DrawBillboard(ctx.camera->raylib, tex.value(), {pos.x, pos.y, pos.z}, size, color.raylib_color());
+            DrawBillboard(ctx.camera->raylib, tex.value(), {pos.x, pos.y, pos.z}, size, raylib_color(color));
         }
     }
 }
@@ -272,7 +280,7 @@ void System::update(f32 dt)
     for (auto &e : emitters)
     {
         e.update(dt);
-    } 
+    }
 }
 
 void System::draw(AppContext &ctx) const
@@ -280,6 +288,7 @@ void System::draw(AppContext &ctx) const
     for (const auto &e : emitters)
     {
         e.draw(ctx);
-    } 
+    }
 }
 } // namespace particle
+

@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.15)
 project(Nexis VERSION 1.0.0 LANGUAGES CXX)
 
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 include(FetchContent)
+set(FETCHCONTENT_QUIET OFF)
 
 # Raylib
 FetchContent_Declare(
@@ -34,49 +38,7 @@ FetchContent_Declare(
     GIT_TAG fc168e8605bfa51aaec22ab0c4e46b9de665a437
 )
 
-set(FETCHCONTENT_QUIET OFF)
 FetchContent_MakeAvailable(raylib imgui rlimgui nfd)
 
-add_library(imgui STATIC
-    ${imgui_SOURCE_DIR}/imgui.cpp
-    ${imgui_SOURCE_DIR}/imgui_draw.cpp
-    ${imgui_SOURCE_DIR}/imgui_tables.cpp
-    ${imgui_SOURCE_DIR}/imgui_widgets.cpp
-)
-
-add_library(rlimgui STATIC
-    ${rlimgui_SOURCE_DIR}/rlImGui.cpp
-)
-
-target_include_directories(rlimgui PUBLIC
-    ${rlimgui_SOURCE_DIR}
-    ${imgui_SOURCE_DIR}
-)
-
-target_link_libraries(rlimgui PUBLIC
-    raylib
-    imgui
-)
-
-set(SRC_FILES
-    src/main.cpp
-    src/app.cpp
-    src/globals.cpp
-    src/particle.cpp
-    src/project.cpp
-    src/utils.cpp
-    src/asset_manager.cpp
-    src/ui/context.cpp
-    src/ui/editor.cpp
-    src/ui/project_explorer.cpp
-)
-
-add_executable(${PROJECT_NAME} ${SRC_FILES})
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    raylib
-    imgui
-    rlimgui
-    nfd
-)
-target_include_directories(${PROJECT_NAME} PRIVATE ${nfd_SOURCE_DIR}/src/include src)
+add_subdirectory(core)
+add_subdirectory(editor)

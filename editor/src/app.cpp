@@ -15,7 +15,7 @@ App::App()
 
     utils::load_projects(&projects);
 
-    grid_shader.handle         = LoadShader(utils::path_abs("../src/shaders/grid.vert").c_str(), utils::path_abs("../src/shaders/grid.frag").c_str());
+    grid_shader.handle         = LoadShader(utils::path_abs("shaders/grid.vert").c_str(), utils::path_abs("shaders/grid.frag").c_str());
     grid_shader.camera_pos_loc = GetShaderLocation(grid_shader.handle, "camera_pos");
 
     camera = SceneCamera{};
@@ -34,13 +34,13 @@ bool App::should_close()
 AppContext App::make_context()
 {
     return AppContext{
-        .dpi_scale    = ui.dpi_scale,
-        .normal_font  = ui.normal_font,
-        .mdedium_font = ui.medium_font,
-        .header_font  = ui.header_font,
-        .project      = &project,
-        .projects     = &projects,
-        .camera       = &camera,
+        .dpi_scale     = ui.dpi_scale,
+        .normal_font   = ui.normal_font,
+        .mdedium_font  = ui.medium_font,
+        .header_font   = ui.header_font,
+        .project       = &project,
+        .projects      = &projects,
+        .camera        = &camera,
         .asset_manager = &asset_manager,
     };
 }
@@ -60,30 +60,25 @@ void App::update()
     }
 }
 
-static void scene_draw(App &app, AppContext &ctx)
-{
-    BeginTextureMode(app.ui.editor.scene);
-    ClearBackground(BLACK);
-
-    BeginMode3D(app.camera.raylib);
-
-    BeginShaderMode(app.grid_shader.handle);
-    DrawPlane({0.0f, 0.0f, 0.0f}, {100.0f, 100.0f}, RED);
-
-    EndShaderMode();
-
-    app.project.system.draw(ctx);
-
-    EndMode3D();
-    EndTextureMode();
-}
-
 void App::draw()
 {
     AppContext ctx = make_context();
     if (state == AppState::Editor)
     {
-        scene_draw(*this, ctx);
+        BeginTextureMode(ui.editor.scene);
+        ClearBackground(BLACK);
+
+        BeginMode3D(camera.raylib);
+
+        BeginShaderMode(grid_shader.handle);
+        DrawPlane({0.0f, 0.0f, 0.0f}, {100.0f, 100.0f}, RED);
+
+        EndShaderMode();
+
+        project.system.draw(ctx);
+
+        EndMode3D();
+        EndTextureMode();
     }
 
     BeginDrawing();

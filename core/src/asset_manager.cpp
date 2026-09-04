@@ -13,7 +13,7 @@ TextureHandle Texture::hash() const
 
 Manager::~Manager()
 {
-	for (auto &tex : textures)
+	for (auto &[key, tex] : textures)
 	{
 		if (tex.handle.id)
 		{
@@ -24,23 +24,25 @@ Manager::~Manager()
 
 TextureHandle Manager::load_texture(const std::string &path)
 {
-	Texture2D texture = LoadTexture(path.c_str());
-	if (!texture.id)
+	Texture2D handle = LoadTexture(path.c_str());
+	if (!handle.id)
 	{
 		std::cout << "Failed to load texture: " << path << std::endl;
 		std::exit(1);
 	}
 
-	textures.push_back({texture, path, GetFileNameWithoutExt(path.c_str())});
+	Texture texture = {handle, path, GetFileNameWithoutExt(path.c_str())};
+	TextureHandle key = texture.hash();
+	textures[key] = texture;
 
-	return textures.back().hash();
+	return key;
 }
 
 std::optional<Texture2D> Manager::get_texture_handle(TextureHandle handle)
 {
-	for (auto &tex : textures)
+	for (auto &[key, tex] : textures)
 	{
-		if (handle == tex.hash())
+		if (handle == key)
 		{
 			return tex.handle;
 		}

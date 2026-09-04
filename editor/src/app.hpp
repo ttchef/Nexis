@@ -17,8 +17,9 @@ struct GridShader
 	i32 camera_pos_loc;	
 };
 
-struct App
+class App
 {
+private:
 	AppState state;
 	GridShader grid_shader;	
 
@@ -29,7 +30,7 @@ struct App
 	SceneCamera camera{};
 	asset::Manager asset_manager{};
 	Project project{};
-
+public:
 	App();
 	~App();
 
