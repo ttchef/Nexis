@@ -1,6 +1,5 @@
 
 #include <app.hpp>
-#include <globals.hpp>
 #include <ui/context.hpp>
 #include <utils.hpp>
 
@@ -9,7 +8,6 @@
 App::App()
     : state(AppState::ProjectExplorer), window(), ui(window.dpi_scale)
 {
-    global.init();
     // Native file dialog
     NFD::Init();
 
@@ -18,11 +16,14 @@ App::App()
     grid_shader.handle         = LoadShader(utils::path_abs("shaders/grid.vert").c_str(), utils::path_abs("shaders/grid.frag").c_str());
     grid_shader.camera_pos_loc = GetShaderLocation(grid_shader.handle, "camera_pos");
 
+    Nx_system_create(&system);
+
     camera = SceneCamera{};
 }
 
 App::~App()
 {
+    Nx_system_destroy(&system);
     NFD::Quit();
 }
 
@@ -48,7 +49,7 @@ AppContext App::make_context()
 void App::update()
 {
     AppContext ctx = make_context();
-    global.update_window_size(GetScreenWidth(), GetScreenHeight());
+    window.update();
     f32 dt = GetFrameTime();
 
     camera.update(ui.editor.scene_texture_active, dt);
@@ -56,7 +57,7 @@ void App::update()
 
     if (state == AppState::Editor)
     {
-        project.system.update(dt);
+        Nx_system_update_emitters(&system, dt);
     }
 }
 
@@ -74,8 +75,6 @@ void App::draw()
         DrawPlane({0.0f, 0.0f, 0.0f}, {100.0f, 100.0f}, RED);
 
         EndShaderMode();
-
-        project.system.draw(ctx);
 
         EndMode3D();
         EndTextureMode();

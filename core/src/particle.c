@@ -1,6 +1,6 @@
 
+#include <Nexis/particle.h>
 #include <darray.h>
-#include <particle.h>
 
 void Nx_emitter_create(NxEmitter *out)
 {
@@ -98,7 +98,7 @@ void Nx_emitter_render_particles(NxEmitter *emitter, NxRenderer *renderer)
 
     NxParticleBatch batch = {
         .particles = particles,
-        .blending = NxBlendingOpaque,  
+        .blending  = NxBlendingOpaque,
     };
 
     renderer->particles_draw(batch);

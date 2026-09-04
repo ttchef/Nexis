@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include <math.h>
-#include <types.h>
+#include <Nexis/types.h>
+#include <Nexis/math.h>
 
 // NOTE: Forward declaration
 typedef struct NxRenderer NxRenderer;

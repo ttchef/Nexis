@@ -60,7 +60,7 @@ Editor::Editor()
 {
     scene                = LoadRenderTexture(2560, 1440);
     scene_texture_active = false;
-    add_emitter          = particle::Emitter{};
+    add_emitter          = NxEmitter{};
 }
 
 AppState Editor::draw(AppContext &ctx)
