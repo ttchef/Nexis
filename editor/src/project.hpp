@@ -22,4 +22,4 @@ struct Project
 };
 
 static const char *NEXIS_PF_EX = ".nxp";
-
+static const char *PROJECT_PATH = "projects";

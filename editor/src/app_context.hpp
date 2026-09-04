@@ -5,6 +5,8 @@
 
 #include <vector>
 
+#include <Nexis/core.h>
+
 struct ImFont;
 struct Project;
 struct ProjectHeader;
@@ -26,5 +28,6 @@ struct AppContext
     std::vector<ProjectHeader> *projects;
     SceneCamera *camera;
     asset::Manager *asset_manager;
+    NxSystem *system;
 };
 

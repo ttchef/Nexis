@@ -1,7 +1,9 @@
 
+#include <asset_manager.hpp>
 #include <project.hpp>
 #include <ui/editor.hpp>
 #include <ui/widgets.hpp>
+#include <utils.hpp>
 
 #include <algorithm>
 #include <iostream>
@@ -10,6 +12,19 @@
 #include <imgui_internal.h>
 #include <misc/cpp/imgui_stdlib.h>
 #include <nfd.hpp>
+
+static const char *emitter_blending_names(NxBlending blending)
+{
+    switch (blending)
+    {
+    case NxBlendingOpaque:
+        return "Opaque";
+    case NxBlendingAdditive:
+        return "Additive";
+    default:
+        return "Unknown";
+    }
+}
 
 static void setup_editor_dockspace()
 {
@@ -81,7 +96,8 @@ AppState Editor::draw(AppContext &ctx)
             }
             if (ImGui::MenuItem("Save"))
             {
-                ctx.project->write();
+                // TODO: Implement
+                assert(0);
             }
 
             ImGui::Separator();
@@ -94,7 +110,7 @@ AppState Editor::draw(AppContext &ctx)
             ImGui::EndMenu();
         }
 
-        ImGui::TextDisabled("Project: %s", ctx.project->file_name.c_str());
+        ImGui::TextDisabled("Project: %s", ctx.project->header.file_name.c_str());
 
         ImGui::EndMainMenuBar();
     }
@@ -114,8 +130,8 @@ AppState Editor::draw(AppContext &ctx)
         ImGui::BeginDisabled(!can_create);
         if (ImGui::Button("Create Emitter"))
         {
-            ctx.project->system.emitters.push_back(add_emitter);
-            add_emitter = particle::Emitter();
+            Nx_system_add_emitter(ctx.system, &add_emitter);
+            add_emitter = NxEmitter{};
             ImGui::CloseCurrentPopup();
         }
         ImGui::EndDisabled();
@@ -123,7 +139,7 @@ AppState Editor::draw(AppContext &ctx)
         ImGui::EndPopup();
     }
 
-    for (u32 i = 0; i < ctx.project->system.emitters.size(); i++)
+    for (u32 i = 0; i < Nx_system_emitter_count(ctx.system); i++)
     {
         auto &e = ctx.project->system.emitters[i];
 
@@ -139,89 +155,9 @@ AppState Editor::draw(AppContext &ctx)
 
             ImGui::SeparatorText("Motion");
 
-            ImGui::DragFloat("Emitter speed", &e.speed, 0.05f);
-            e.speed = std::max(e.speed, 0.0f);
-
-            widgets::DragRandomFloat("Particle lifetime", e.lifetime);
-
-            ImGui::DragFloat3("Direction", &e.direction.x, 0.05f);
-
-            ImGui::Checkbox("Draw Forcefield", &e.render_force_field);
-
-            i32 force_to_remove = -1;
-            for (u32 i = 0; i < e.forces.size(); i++)
-            {
-                auto &force = e.forces[i];
-
-                ImGui::PushID(i);
-
-                ImGui::Checkbox("##enabled", &force.enabled);
-                ImGui::SameLine();
-
-                bool open = ImGui::TreeNodeEx("##node", ImGuiTreeNodeFlags_None, "%s", force.name());
-
-                ImGui::SameLine(ImGui::GetContentRegionAvail().x - 12.0f * ctx.dpi_scale);
-                if (ImGui::SmallButton("x"))
-                {
-                    force_to_remove = i;
-                }
-
-                if (open)
-                {
-                    std::visit([](auto &&value)
-                               {
-                                   using T = std::decay_t<decltype(value)>;
-
-                                   if constexpr (std::is_same_v<T, particle::ForceGravity>)
-                                   {
-                                        ImGui::DragFloat3("Direction", &value.direction.x, 0.05f);
-                                        ImGui::DragFloat("Strength", &value.strength, 0.05f);
-                                   }
-                                   else if constexpr (std::is_same_v<T, particle::ForcePoint>)
-                                   {
-                                       ImGui::DragFloat3("Position", &value.pos.x, 0.05f);
-                                       ImGui::DragFloat("Strength", &value.strength, 0.05f);
-                                       ImGui::DragFloat("Falloff Radius", &value.falloff_radius, 0.05f);
-                                   } },
-                               force.type);
-                    ImGui::TreePop();
-                }
-
-                ImGui::PopID();
-            }
-
-            if (force_to_remove >= 0)
-            {
-                e.forces.erase(e.forces.begin() + force_to_remove);
-            }
-
-            if (ImGui::Button("Add Force", ImVec2(-FLT_MIN, 0)))
-            {
-                ImGui::OpenPopup("AddForcePopup");
-            }
-
-            if (ImGui::BeginPopup("AddForcePopup"))
-            {
-                if (ImGui::Selectable("Gravity"))
-                {
-                    e.forces.push_back({particle::ForceGravity{}, true});
-                }
-                if (ImGui::Selectable("Point"))
-                {
-                    e.forces.push_back({particle::ForcePoint{}, true});
-                }
-                ImGui::EndPopup();
-            }
-
             ImGui::SeparatorText("Appearance");
 
-            ImGui::ColorEdit4("Birth Color", static_cast<f32 *>(&e.birth_color.x), ImGuiColorEditFlags_AlphaBar);
-            ImGui::ColorEdit4("Death Color", static_cast<f32 *>(&e.death_color.x), ImGuiColorEditFlags_AlphaBar);
-
-            widgets::DragRandomFloat("Birth Size", e.birth_size);
-            widgets::DragRandomFloat("Death Size", e.death_size);
-
-            ImGui::Combo("Blend Mode", reinterpret_cast<i32 *>(&e.blending), particle::EMITTER_BLENDING_NAMES, ARRAY_COUNT(particle::EMITTER_BLENDING_NAMES));
+            ImGui::Combo("Blend Mode", reinterpret_cast<i32 *>(&e.blending), emitter_blending_names(e.blending), ARRAY_COUNT(emitter_blending_names(e.blending)));
 
             ImVec2 texture_size = ImVec2(100.0f * ctx.dpi_scale, 100.0f * ctx.dpi_scale);
             if (ImGui::BeginChild("texture", texture_size, ImGuiChildFlags_Borders))
@@ -248,40 +184,6 @@ AppState Editor::draw(AppContext &ctx)
                 }
             }
             ImGui::EndChild();
-
-            ImGui::SeparatorText("Emitter Shape");
-
-            const char *current = "Unkown";
-
-            if (std::holds_alternative<particle::EmitterShapeRectangle>(e.shape))
-            {
-                current = "Rectangle";
-            }
-            if (ImGui::BeginCombo("Emitter Shape", current))
-            {
-                if (ImGui::Selectable("Rectangle", std::holds_alternative<particle::EmitterShapeRectangle>(e.shape)))
-                {
-                    e.shape = particle::EmitterShapeRectangle{};
-                }
-
-                ImGui::EndCombo();
-            }
-            ImGui::Checkbox("Render Emitter Shape", &e.render_shape);
-
-            std::visit([](auto &value)
-                       {
-                using T = std::decay_t<decltype(value)>;
-
-                if constexpr (std::is_same_v<T, particle::EmitterShapeRectangle>) {
-                    ImGui::DragFloat2("##pos", &value.pos.x, 0.05f);
-                    ImGui::SameLine();
-                    ImGui::Text("Position");
-                    ImGui::DragFloat2("##size", &value.size.x, 0.05f);
-                    ImGui::SameLine();
-                    ImGui::Text("Size    ");
-
-                     value.size.max(0.0f);
-                } }, e.shape);
             ImGui::EndChild();
             ImGui::PopStyleVar();
         }
@@ -337,7 +239,7 @@ AppState Editor::draw(AppContext &ctx)
 
         ImVec2 size = ImGui::GetContentRegionAvail();
 
-            ImGui::InvisibleButton("drag_texture", size);
+        ImGui::InvisibleButton("drag_texture", size);
         if (ImGui::BeginDragDropSource())
         {
             auto hash = tex.hash();

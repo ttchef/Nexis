@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include <Nexis/types.h>
 #include <Nexis/math.h>
+#include <Nexis/types.h>
 
 // NOTE: Forward declaration
 typedef struct NxRenderer NxRenderer;
@@ -27,9 +27,18 @@ typedef struct
     NxVec3 *scales;
 } NxParticles;
 
+typedef enum
+{
+    NxBlendingOpaque,
+    NxBlendingAdditive,
+} NxBlending;
+
 typedef struct
 {
-    NxParticles particles;
+    NxParticles     particles;
+    NxBool          enabled;
+    NxTextureHandle texture;
+    NxBlending      blending;
 } NxEmitter;
 
 void Nx_emitter_create(NxEmitter *out);
@@ -59,16 +68,12 @@ void Nx_system_update_emitters(NxSystem *system, NxF32 delta_time);
 
 void Nx_system_render_emitters(NxSystem *system, NxRenderer *renderer);
 
-typedef enum
-{
-    NxBlendingOpaque,
-    NxBlendingAdditive,
-} NxBlending;
+NxU32 Nx_system_emitter_count(NxSystem *system);
 
 typedef struct
 {
     NxParticles *particles;
-    NxU32 particle_count;
+    NxU32        particle_count;
     NxBlending   blending;
 } NxParticleBatch;
 

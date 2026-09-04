@@ -8,6 +8,7 @@ void Nx_emitter_create(NxEmitter *out)
     {
         return;
     }
+    memset(out, 0, sizeof(NxEmitter));
 
     NxParticles *particles = &out->particles;
 
@@ -99,7 +100,7 @@ void Nx_emitter_render_particles(NxEmitter *emitter, NxRenderer *renderer)
     NxParticleBatch batch = {
         .particles = particles,
         .particle_count = Nx_darray_len(particles->positions),
-        .blending  = NxBlendingOpaque,
+        .blending = emitter->blending,
     };
 
     renderer->particles_draw(batch);
@@ -111,6 +112,7 @@ void Nx_system_create(NxSystem *out)
     {
         return;
     }
+    memset(out, 0, sizeof(NxSystem));
 
     out->emitters = Nx_darray_create(sizeof(NxEmitter));
 }
@@ -171,4 +173,14 @@ void Nx_system_render_emitters(NxSystem *system, NxRenderer *renderer)
     {
         Nx_emitter_render_particles(&system->emitters[i], renderer);
     }
+}
+
+NxU32 Nx_system_emitter_count(NxSystem *system)
+{
+    if (!system)
+    {
+        return 0;
+    }
+
+    return Nx_darray_len(system->emitters);
 }

@@ -128,7 +128,7 @@ AppState ProjectExplorer::draw(AppContext &ctx)
             ImGui::BeginDisabled(ctx.project->header.file_name.empty());
             if (ImGui::Button("Create Project"))
             {
-                ctx.project->header.file_path = std::format("{}/{}{}", global.project_path, ctx.project->header.file_name, NEXIS_PF_EX);
+                ctx.project->header.file_path = std::format("{}/{}{}", utils::path_abs(PROJECT_PATH), ctx.project->header.file_name, NEXIS_PF_EX);
                 state                  = AppState::Editor;
             }
             ImGui::EndDisabled();

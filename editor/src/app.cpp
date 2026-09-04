@@ -20,7 +20,7 @@ App::App()
 
     Nx_system_create(&system);
     renderer = {
-          .particles_draw = Nx_backend_raylib_render,  
+        .particles_draw = Nx_backend_raylib_render,
     };
 
     camera = SceneCamera{};
@@ -48,6 +48,7 @@ AppContext App::make_context()
         .projects      = &projects,
         .camera        = &camera,
         .asset_manager = &asset_manager,
+        .system        = &system,
     };
 }
 

@@ -10,7 +10,7 @@ namespace utils
 {
 void load_projects(std::vector<ProjectHeader> *projects)
 {
-    std::string project_path = utils::path_abs("projects");
+    std::string project_path = utils::path_abs(PROJECT_PATH);
 
     if (!projects->empty())
     {
