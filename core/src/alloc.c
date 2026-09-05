@@ -33,7 +33,7 @@ void Nx_virtual_free(void *mem, NxU64 size)
     NxI32 result = munmap(mem, size);
     if (result == -1)
     {
-        fprintf(stderr, "[NEXIS] munmap failed: errno=%s (%s\n)", errno, strerror(errno));
+        fprintf(stderr, "[NEXIS] munmap failed: errno=%d (%s\n)", errno, strerror(errno));
     }
 }
 

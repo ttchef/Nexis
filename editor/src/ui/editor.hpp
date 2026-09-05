@@ -10,11 +10,16 @@
 
 namespace ui
 {
+
+constexpr i32 MODULE_INDEX_NONE = -1;
     
 struct SelectedModule
 {
-    NxModuleQueueIndex type;
     u32 emitter_index;
+    NxModuleQueueIndex queue_index;
+    i32 module_index;
+
+    // NOTE: Special case settings menu
     bool settings;
 };
     

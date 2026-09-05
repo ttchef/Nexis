@@ -22,7 +22,7 @@ void Nx_emitter_create(NxEmitter *out)
     Nx_PARTICLE_FIELDS(X)
 #undef X
 
-        Nx_modules_create(&out->config.modules);
+    Nx_modules_create(&out->config.modules);
 
     out->config.enabled = true;
 }
@@ -42,7 +42,7 @@ void Nx_emitter_destroy(NxEmitter *emitter)
     Nx_PARTICLE_FIELDS(X)
 #undef X
 
-        Nx_modules_destroy(&emitter->config.modules);
+    Nx_modules_destroy(&emitter->config.modules);
 }
 
 void Nx_emitter_add_particle(NxEmitter *emitter, NxParticle particle)
@@ -98,6 +98,15 @@ static void on_emitter_update_module(NxModuleType type, void *module_data, void 
                                                        .lifetime = 1.0f,
                                                        .scale    = {0.1, 0.1f, 0.1f},
                                                    });
+        }
+    }
+    break;
+    case NxModuleType_SpawnBurst:
+    {
+        NxModuleSpawnBurst *spawn_burst = module_data;
+
+        for (NxU32 i = 0; i < spawn_burst->particle_count; i++)
+        {
         }
     }
     break;

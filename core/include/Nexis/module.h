@@ -3,12 +3,14 @@
 
 #include <Nexis/types.h>
 
-#define MODULES(MODULE, FIELD)    \
-    MODULE(                       \
-        SpawnRate,                \
-        FIELD(NxF32, emit_speed) \
-        FIELD(NxF32, elapsed_time)\
-    )
+#define MODULES(MODULE, FIELD)          \
+    MODULE(                             \
+        SpawnRate,                      \
+        FIELD(NxF32, emit_speed)        \
+            FIELD(NxF32, elapsed_time)) \
+    MODULE(                             \
+        SpawnBurst,                     \
+        FIELD(NxU32, particle_count))
 
 typedef enum
 {
