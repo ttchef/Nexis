@@ -12,10 +12,9 @@ void Nx_emitter_create(NxEmitter *out)
 
     NxParticles *particles = &out->particles;
 
-    particles->positions     = Nx_darray_create(sizeof(NxVec3));
-    particles->velocities    = Nx_darray_create(sizeof(NxVec3));
-    particles->accelerations = Nx_darray_create(sizeof(NxVec3));
-    particles->scales        = Nx_darray_create(sizeof(NxVec3));
+#define X(type, name) particles->name = Nx_darray_create(sizeof(type));
+    Nx_PARTICLE_FIELDS(X)
+#undef X
 }
 
 void Nx_emitter_destroy(NxEmitter *emitter)
@@ -27,12 +26,9 @@ void Nx_emitter_destroy(NxEmitter *emitter)
 
     NxParticles *particles = &emitter->particles;
 
-    Nx_darray_destroy(particles->positions);
-    Nx_darray_destroy(particles->velocities);
-    Nx_darray_destroy(particles->scales);
-
-    emitter->particles.positions = NULL;
-    emitter->particles.scales    = NULL;
+#define X(type, name) Nx_darray_destroy(particles->name); particles->name = NULL;
+    Nx_PARTICLE_FIELDS(X)
+#undef X
 }
 
 void Nx_emitter_add_particle(NxEmitter *emitter, NxParticle particle)
@@ -44,27 +40,25 @@ void Nx_emitter_add_particle(NxEmitter *emitter, NxParticle particle)
 
     NxParticles *particles = &emitter->particles;
 
-    if (!particles->positions ||
-        !particles->scales ||
-        !particles->velocities ||
-        !particles->accelerations)
+#define X(type, name) !particles->name ||
+    if (Nx_PARTICLE_FIELDS(X) 0)
     {
         fprintf(stderr, "[NEXIS] Tried calling 'Nx_emitter_add_particle' on an uninitialized emitter\n");
         return;
     }
+#undef X
 
-    Nx_darray_push((void **)particles->positions, &particle.position);
-    Nx_darray_push((void **)particles->velocities, &particle.velocity);
-    Nx_darray_push((void **)particles->accelerations, &particle.acceleration);
-    Nx_darray_push((void **)particles->scales, &particle.scale);
+#define X(type, name) Nx_darray_push((void **)&particles->name, &particle.name);
+    Nx_PARTICLE_FIELDS(X)
+#undef X
 }
 
 static void particles_assert_same_len(NxParticles *particles)
 {
-    NxU32 positions_len = Nx_darray_len(particles->positions);
-    assert(Nx_darray_len(particles->velocities) == positions_len);
-    assert(Nx_darray_len(particles->accelerations) == positions_len);
-    assert(Nx_darray_len(particles->scales) == positions_len);
+    NxU32 position_len = Nx_darray_len(particles->position);
+#define X(type, name) assert(Nx_darray_len(particles->name) == position_len);
+    Nx_PARTICLE_FIELDS(X)
+#undef X
 }
 
 void Nx_emitter_update_particles(NxEmitter *emitter, NxF32 delta_time)
@@ -77,13 +71,13 @@ void Nx_emitter_update_particles(NxEmitter *emitter, NxF32 delta_time)
     NxParticles *particles = &emitter->particles;
     particles_assert_same_len(particles);
 
-    for (NxU32 i = 0; i < Nx_darray_len(particles->positions); i++)
+    for (NxU32 i = 0; i < Nx_darray_len(particles->position); i++)
     {
         // TODO: Add more than a constant gravity
-        particles->accelerations[i] = Nx_vec3(0.0f, -10.0f, 0.0f);
-        particles->velocities[i]    = Nx_vec3_add(particles->velocities[i], Nx_vec3_scale(particles->accelerations[i], delta_time));
-        particles->positions[i]     = Nx_vec3_add(particles->positions[i], Nx_vec3_scale(particles->velocities[i], delta_time));
-        particles->accelerations[i] = Nx_vec3(0.0f, 0.0f, 0.0f);
+        particles->acceleration[i] = Nx_vec3(0.0f, -10.0f, 0.0f);
+        particles->velocity[i]    = Nx_vec3_add(particles->velocity[i], Nx_vec3_scale(particles->acceleration[i], delta_time));
+        particles->position[i]     = Nx_vec3_add(particles->position[i], Nx_vec3_scale(particles->velocity[i], delta_time));
+        particles->acceleration[i] = Nx_vec3(0.0f, 0.0f, 0.0f);
     }
 }
 
@@ -99,7 +93,7 @@ void Nx_emitter_render_particles(NxEmitter *emitter, NxRenderer *renderer)
 
     NxParticleBatch batch = {
         .particles = particles,
-        .particle_count = Nx_darray_len(particles->positions),
+        .particle_count = Nx_darray_len(particles->position),
         .blending = emitter->blending,
     };
 
@@ -143,10 +137,9 @@ void Nx_system_add_emitter(NxSystem *system, NxEmitter *emitter)
     Nx_darray_push((void **)&system->emitters, emitter);
 
     // NOTE: Emitter resources will be managed from the system now
-    emitter->particles.positions     = NULL;
-    emitter->particles.velocities    = NULL;
-    emitter->particles.accelerations = NULL;
-    emitter->particles.scales        = NULL;
+#define X(type, name) emitter->particles.name = NULL;
+    Nx_PARTICLE_FIELDS(X)
+#undef X
 }
 
 void Nx_system_update_emitters(NxSystem *system, NxF32 delta_time)

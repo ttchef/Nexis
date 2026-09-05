@@ -8,24 +8,17 @@
 #include <algorithm>
 #include <iostream>
 #include <cstring>
+#include <ranges>
 
 #include <imgui.h>
 #include <imgui_internal.h>
 // #include <misc/cpp/imgui_stdlib.h>
 #include <nfd.hpp>
 
-static const char *emitter_blending_names(NxBlending blending)
-{
-    switch (blending)
-    {
-    case NxBlendingOpaque:
-        return "Opaque";
-    case NxBlendingAdditive:
-        return "Additive";
-    default:
-        return "Unknown";
-    }
-}
+static const char *EMITTER_BLENDING_NAMES[] = {
+    "Opaque",
+    "Additive",  
+};
 
 static void setup_editor_dockspace()
 {
@@ -158,15 +151,15 @@ AppState Editor::draw(AppContext &ctx)
 
             ImGui::SeparatorText("Appearance");
 
-            ImGui::Combo("Blend Mode", reinterpret_cast<i32 *>(&e.blending), emitter_blending_names(e.blending), ARRAY_COUNT(emitter_blending_names(e.blending)));
+            ImGui::Combo("Blend Mode", reinterpret_cast<i32 *>(&e.blending), EMITTER_BLENDING_NAMES[e.blending], std::strlen(EMITTER_BLENDING_NAMES[e.blending]));
 
             ImVec2 texture_size = ImVec2(100.0f * ctx.dpi_scale, 100.0f * ctx.dpi_scale);
             if (ImGui::BeginChild("texture", texture_size, ImGuiChildFlags_Borders))
             {
-                auto tex = ctx.asset_manager->get_texture_handle(e.texture);
-                if (tex)
+                auto tex = ctx.asset_manager->textures.find(e.texture);
+                if (tex != ctx.asset_manager->textures.end())
                 {
-                    ImGui::Image(static_cast<ImTextureRef>(tex.value().id), ImGui::GetContentRegionAvail());
+                    ImGui::Image(static_cast<ImTextureRef>(tex->second.handle.id), ImGui::GetContentRegionAvail());
                 }
                 else
                 {
@@ -232,7 +225,7 @@ AppState Editor::draw(AppContext &ctx)
     u32 columns = std::max(static_cast<u32>((available_width + spacing) / (item_width + spacing)), 1u);
     u32 index   = 0;
 
-    for (const auto &[key, tex] : ctx.asset_manager->textures)
+    for (const auto &tex : ctx.asset_manager->textures | std::views::values)
     {
         ImGui::PushID(index);
 

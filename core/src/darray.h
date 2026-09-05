@@ -100,7 +100,7 @@ static inline void Nx_darray_len_set(void *Nx_darray, NxU32 len)
 
 static inline void *Nx_darray_at(void *Nx_darray, NxU32 index)
 {
-    if (index * Nx_darray_element_size(Nx_darray) >= Nx_darray_len(Nx_darray))
+    if (index >= Nx_darray_len(Nx_darray))
     {
         fprintf(stderr, "[NEXIS] Tried to index darray out of bounds: %u\n", index);
         assert(0);

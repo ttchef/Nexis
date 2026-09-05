@@ -5,6 +5,7 @@
 
 #include <ctime>
 #include <filesystem>
+#include <ranges>
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -140,10 +141,8 @@ AppState ProjectExplorer::draw(AppContext &ctx)
         }
 
         i32 project_to_remove = -1;
-        for (u32 i = 0; i < ctx.projects->size(); i++)
+        for (auto [i, project] : std::views::enumerate(*ctx.projects))
         {
-            auto &project = ctx.projects->at(i);
-
             ImGui::PushID(i);
 
             if (hovered_child == i)

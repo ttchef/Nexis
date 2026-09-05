@@ -9,22 +9,28 @@ typedef struct NxRenderer NxRenderer;
 
 typedef NxU64 NxTextureHandle;
 
+// NOTE: This makes up the fields of a particle and all the dynamic arrays for the SoA
+#define Nx_PARTICLE_FIELDS(X) \
+    X(NxVec3, position) \
+    X(NxVec3, velocity) \
+    X(NxVec3, acceleration) \
+    X(NxVec3, scale)
+
 // NOTE: Only used as parameter for 'Nx_emitter_add_particle'
 typedef struct
 {
-    NxVec3 position;
-    NxVec3 velocity;
-    NxVec3 acceleration;
-    NxVec3 scale;
+#define X(type, name) type name;
+    Nx_PARTICLE_FIELDS(X)
+#undef X
 } NxParticle;
 
 typedef struct
 {
     // NOTE: All are darrays
-    NxVec3 *positions;
-    NxVec3 *velocities;
-    NxVec3 *accelerations;
-    NxVec3 *scales;
+    // If you are searching for the fields look at the 'Nx_PARTICLE_FIELDS' macro
+#define X(type, name) type *name;
+    Nx_PARTICLE_FIELDS(X)
+#undef X
 } NxParticles;
 
 typedef enum
