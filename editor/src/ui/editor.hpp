@@ -13,7 +13,7 @@ namespace ui
     
 struct SelectedModule
 {
-    NxModuleQueueType type;
+    NxModuleQueueIndex type;
     u32 emitter_index;
     bool settings;
 };

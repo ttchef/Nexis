@@ -17,6 +17,8 @@ void Nx_emitter_create(NxEmitter *out)
 #undef X
 
     Nx_modules_create(&out->config.modules);
+
+    out->config.enabled = true;
 }
 
 void Nx_emitter_destroy(NxEmitter *emitter)
@@ -65,6 +67,20 @@ static void particles_assert_same_len(NxParticles *particles)
 #undef X
 }
 
+static void on_emitter_update_module(NxModuleType type, void *data)
+{
+    switch (type)
+    {
+    case NxModuleType_SpawnRate:
+    {
+        NxModuleSpawnRate *spawn_rate = data;
+        printf("Spawnrate: %d\n", spawn_rate->test0);
+        printf("Spawnrate: %d\n", spawn_rate->test1);
+    } break;
+    default: break;
+    }
+}
+
 void Nx_emitter_update_particles(NxEmitter *emitter, NxF32 delta_time)
 {
     if (!emitter)
@@ -75,35 +91,7 @@ void Nx_emitter_update_particles(NxEmitter *emitter, NxF32 delta_time)
     NxParticles *particles = &emitter->config.particles;
     particles_assert_same_len(particles);
 
-    NxModuleQueue *queue = &emitter->config.modules.queues[NxModuleQueue_EmitterUpdate];
-    NxU8 *at = queue->data;
-
-    while (at < queue->data + queue->used)
-    {
-        NxModuleHeader *header = (NxModuleHeader *)at;
-        if (header->size == 0)
-        {
-            fprintf(stderr, "[NEXIS] Encouterd module header size == 0 will break out of loop\n");
-            break;
-        }
-
-        void *data = at + sizeof(NxModuleHeader);
-
-        switch (header->type)
-        {
-        case NxModuleType_SpawnRate:
-        {
-            NxModuleSpawnRate *spawn_rate = (NxModuleSpawnRate *)data;
-            printf("Spawnrate: %d\n", spawn_rate->test0);
-        } break;
-        default:
-        {
-            fprintf(stderr, "[NEXIS] Unkown module\n");
-        } break;
-        }
-
-        at += header->size;
-    }
+    Nx_modules_for_each(&emitter->config.modules, NxModuleQueue_EmitterUpdate, on_emitter_update_module);
 
     for (NxU32 i = 0; i < Nx_darray_len(particles->position); i++)
     {

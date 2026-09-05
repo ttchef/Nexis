@@ -156,18 +156,21 @@ static void setup_emitters(AppContext &ctx, NxEmitter &add_emitter, ui::Selected
             ImGui::EndChild();
             ImGui::PopStyleVar();
 
-            ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.0f * ctx.dpi_scale);
-            ImGui::BeginChild("emitter_settings", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY);
             for (u32 j = 0; j < NxModuleQueue_Count; j++)
             {
+                ImGui::PushID(j);
+
+                ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.0f * ctx.dpi_scale);
+                ImGui::BeginChild("##module_type", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY);
+
                 if (ImGui::Selectable(MODULE_QUEUE_TYPE_NAMES[j]))
                 {
-                    module = ui::SelectedModule{static_cast<NxModuleQueueType>(j), i};
+                    module = ui::SelectedModule{static_cast<NxModuleQueueIndex>(j), i};
                 }
 
                 ImGui::SameLine();
 
-                if (ImGui::Button("+"))
+                if (ImGui::Button("Add"))
                 {
                     ImGui::OpenPopup("AddModulePopup");
                 }
@@ -177,16 +180,17 @@ static void setup_emitters(AppContext &ctx, NxEmitter &add_emitter, ui::Selected
                     {
                         NxModuleSpawnRate spawn_rate = {
                             .test0 = 67,
-                            .test1 = 187,  
+                            .test1 = 187,
                         };
-                        Nx_modules_add_SpawnRate(&e.modules, static_cast<NxModuleQueueType>(j), spawn_rate);
+                        Nx_modules_add_SpawnRate(&e.modules, static_cast<NxModuleQueueIndex>(j), spawn_rate);
                         ImGui::CloseCurrentPopup();
                     }
                     ImGui::EndPopup();
                 }
+                ImGui::EndChild();
+                ImGui::PopStyleVar();
+                ImGui::PopID();
             }
-            ImGui::EndChild();
-            ImGui::PopStyleVar();
 
             ImGui::EndChild();
             ImGui::PopStyleVar();
@@ -201,9 +205,9 @@ static void setup_module(AppContext &ctx, ui::SelectedModule &module)
 {
     ImGui::Begin("Module");
 
+    auto &e = ctx.project->system.emitters[module.emitter_index];
     if (module.settings)
     {
-        auto &e = ctx.project->system.emitters[module.emitter_index];
         ImGui::TextUnformatted("Settings");
         ImGui::Checkbox("Test", &e.config.enabled);
     }
@@ -344,6 +348,7 @@ Editor::Editor()
     scene                = LoadRenderTexture(2560, 1440);
     scene_texture_active = false;
     Nx_emitter_create(&add_emitter);
+    module = {static_cast<NxModuleQueueIndex>(-1), 0, false};
 }
 
 AppState Editor::draw(AppContext &ctx)

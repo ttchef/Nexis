@@ -46,20 +46,24 @@ typedef enum
     NxModuleQueue_None = -1,
     NxModuleQueue_EmitterUpdate,
     NxModuleQueue_Count,
-} NxModuleQueueType;
+} NxModuleQueueIndex;
 
 typedef struct
 {
     NxModuleQueue queues[NxModuleQueue_Count];
 } NxModules;
 
+typedef void (*Nx_for_each_module_func)(NxModuleType type, void *data);
+
 void Nx_modules_create(NxModules *out);
 
 void Nx_modules_destroy(NxModules *modules);
 
+void Nx_modules_for_each(NxModules *modules, NxModuleQueueIndex queue, Nx_for_each_module_func func);
+
 // NOTE: Add module functions
 #define FIELD(...)
-#define MODULE(name, ...) void Nx_modules_add_##name(NxModules *modules, NxModuleQueueType queue, NxModule##name module);
+#define MODULE(name, ...) void Nx_modules_add_##name(NxModules *modules, NxModuleQueueIndex queue, NxModule##name module);
 MODULES(MODULE, FIELD)
 #undef FIELD
 #undef MODULE

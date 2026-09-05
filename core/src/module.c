@@ -57,6 +57,11 @@ void Nx_module_queue_push(NxModuleQueue *queue, void *data, NxU64 size)
 
 void Nx_modules_create(NxModules *out)
 {
+    if (!out)
+    {
+        return;
+    }
+
     for (NxU32 i = 0; i < NxModuleQueue_Count; i++)
     {
         Nx_module_queue_create(&out->queues[i]);
@@ -65,16 +70,48 @@ void Nx_modules_create(NxModules *out)
 
 void Nx_modules_destroy(NxModules *modules)
 {
+    if (!modules)
+    {
+        return;
+    }
+
     for (NxU32 i = 0; i < NxModuleQueue_Count; i++)
     {
         Nx_module_queue_destroy(&modules->queues[i]);
     }
 }
 
+void Nx_modules_for_each(NxModules *modules, NxModuleQueueIndex queue, Nx_for_each_module_func func)
+{
+    if (!modules || !func)
+    {
+        return;
+    }
+    
+    NxModuleQueue *q = &modules->queues[queue];
+    NxU8 *at = q->data;
+
+    while (at < q->data + q->used)
+    {
+        NxModuleHeader *header = (NxModuleHeader *)at;
+        if (header->size == 0)
+        {
+            fprintf(stderr, "[NEXIS] Encouterd module header size == 0 will break out of loop\n");
+            break;
+        }
+
+        void *data = at + sizeof(NxModuleHeader);
+
+        func(header->type, data);
+
+        at += header->size;
+    }
+}
+
 // NOTE: Add module functions
 #define FIELD(...)
 #define MODULE(name, ...)                                                                        \
-    void Nx_modules_add_##name(NxModules *modules, NxModuleQueueType queue, NxModule##name module) \
+    void Nx_modules_add_##name(NxModules *modules, NxModuleQueueIndex queue, NxModule##name module) \
     {                                                                                            \
         if (!modules)                                                                            \
         {                                                                                        \
