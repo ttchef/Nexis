@@ -15,8 +15,7 @@ typedef NxU64 NxTextureHandle;
     X(NxVec3, position)       \
     X(NxVec3, velocity)       \
     X(NxVec3, acceleration)   \
-    X(NxVec3, scale)          \
-    X(NxF32, lifetime)
+    X(NxVec3, scale)
 
 // NOTE: Only used as parameter for 'Nx_emitter_add_particle'
 typedef struct

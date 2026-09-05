@@ -4,6 +4,11 @@
 
 typedef struct
 {
+    NxParticle *particle;    
+} NxParticleOnSpawnData;
+
+typedef struct
+{
     NxEmitter *emitter;
     NxF32      delta_time;
 } NxEmitterOnUpdateData;
@@ -42,7 +47,23 @@ void Nx_emitter_destroy(NxEmitter *emitter)
     Nx_PARTICLE_FIELDS(X)
 #undef X
 
-    Nx_modules_destroy(&emitter->config.modules);
+        Nx_modules_destroy(&emitter->config.modules);
+}
+
+static void on_particle_spawn_module(NxModuleType type, void *module_data, void *userdata)
+{
+    NxParticleOnSpawnData *data = userdata;
+
+    switch (type)
+    {
+    case NxModuleType_AddVelocity:
+    {
+        NxModuleAddVelocity *add_velocity = module_data;
+
+        data->particle->velocity = Nx_vec3_scale(add_velocity->direction, add_velocity->speed);
+    } break;
+    default: break;
+    }
 }
 
 void Nx_emitter_add_particle(NxEmitter *emitter, NxParticle particle)
@@ -61,6 +82,11 @@ void Nx_emitter_add_particle(NxEmitter *emitter, NxParticle particle)
         return;
     }
 #undef X
+
+    NxParticleOnSpawnData data = {
+          .particle = &particle,  
+    };
+    Nx_modules_for_each(&emitter->config.modules, NxModuleQueue_ParticleSpawn, on_particle_spawn_module, &data);
 
 #define X(type, name) Nx_darray_push((void **)&particles->name, &particle.name);
     Nx_PARTICLE_FIELDS(X)
@@ -94,8 +120,7 @@ static void on_emitter_update_module(NxModuleType type, void *module_data, void 
 
             Nx_emitter_add_particle(data->emitter, (NxParticle){
                                                        .position = {0, 0, 0},
-                                                       .velocity = {0, 10, 0},
-                                                       .lifetime = 1.0f,
+                                                       .velocity = {0, 0, 0},
                                                        .scale    = {0.1, 0.1f, 0.1f},
                                                    });
         }
@@ -105,8 +130,17 @@ static void on_emitter_update_module(NxModuleType type, void *module_data, void 
     {
         NxModuleSpawnBurst *spawn_burst = module_data;
 
-        for (NxU32 i = 0; i < spawn_burst->particle_count; i++)
+        if (spawn_burst->trigger_count > 1)
         {
+            --spawn_burst->trigger_count;
+            for (NxU32 i = 0; i < spawn_burst->particle_count; i++)
+            {
+                Nx_emitter_add_particle(data->emitter, (NxParticle){
+                                                           .position = {0, 0, 0},
+                                                           .velocity = {0, 0, 0},
+                                                           .scale    = {0.1, 0.1f, 0.1f},
+                                                       });
+            }
         }
     }
     break;
@@ -117,7 +151,7 @@ static void on_emitter_update_module(NxModuleType type, void *module_data, void 
 
 void Nx_emitter_update_particles(NxEmitter *emitter, NxF32 delta_time)
 {
-    if (!emitter)
+    if (!emitter || !emitter->config.enabled)
     {
         return;
     }
@@ -127,13 +161,14 @@ void Nx_emitter_update_particles(NxEmitter *emitter, NxF32 delta_time)
 
     NxEmitterOnUpdateData data = {
         .emitter    = emitter,
-        .delta_time = delta_time};
+        .delta_time = delta_time
+    };
     Nx_modules_for_each(&emitter->config.modules, NxModuleQueue_EmitterUpdate, on_emitter_update_module, &data);
 
     for (NxU32 i = 0; i < Nx_darray_len(particles->position); i++)
     {
         // TODO: Add more than a constant gravity
-        particles->acceleration[i] = Nx_vec3(0.0f, -10.0f, 0.0f);
+        particles->acceleration[i] = Nx_vec3(0.0f, 0.0f, 0.0f);
         particles->velocity[i]     = Nx_vec3_add(particles->velocity[i], Nx_vec3_scale(particles->acceleration[i], delta_time));
         particles->position[i]     = Nx_vec3_add(particles->position[i], Nx_vec3_scale(particles->velocity[i], delta_time));
         particles->acceleration[i] = Nx_vec3(0.0f, 0.0f, 0.0f);
@@ -142,7 +177,7 @@ void Nx_emitter_update_particles(NxEmitter *emitter, NxF32 delta_time)
 
 void Nx_emitter_render_particles(NxEmitter *emitter, NxRenderer *renderer)
 {
-    if (!emitter || !renderer)
+    if (!emitter || !emitter->config.enabled || !renderer)
     {
         return;
     }

@@ -21,7 +21,16 @@ static const char *EMITTER_BLENDING_NAMES[] = {
 };
 
 static const char *MODULE_QUEUE_TYPE_NAMES[] = {
+    "Emitter Spawn",
     "Emitter Update",
+    "Particle Spawn",
+    "Particle Update",
+};
+
+static const char *MODULE_TYPE_NAMES[] = {
+    "Spawn Rate",
+    "Spawn Burst",
+    "Add velocity",
 };
 
 static void setup_editor_dockspace()
@@ -171,23 +180,34 @@ static void setup_emitters(AppContext &ctx, NxEmitter &add_emitter, ui::Selected
 
                 if (ImGui::CollapsingHeader(MODULE_QUEUE_TYPE_NAMES[j]))
                 {
-                    Nx_modules_for_each(&e.modules, static_cast<NxModuleQueueIndex>(j), [](NxModuleType type, void *module_data, void *userdata)
+                    if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+                    {
+                        module = ui::SelectedModule{i, static_cast<NxModuleQueueIndex>(j), ui::MODULE_INDEX_NONE, false};
+                    }
+
+                    struct FunctionContext
+                    {
+                        u32                 emitter_index;
+                        NxModuleQueueIndex  queue_index;
+                        i32                 index = 0;
+                        ui::SelectedModule *module;
+                    } function_ctx = {
+                        .emitter_index = i,
+                        .queue_index   = static_cast<NxModuleQueueIndex>(j),
+                        .module        = &module,
+                    };
+
+                    Nx_modules_for_each(&e.modules, function_ctx.queue_index, [](NxModuleType type, void *module_data, void *userdata)
                                         {
-                                            switch (type)
+                                            auto ctx = static_cast<FunctionContext *>(userdata);
+                                            ImGui::PushID(ctx->index);
+
+                                            if (ImGui::Selectable(MODULE_TYPE_NAMES[type]))
                                             {
-                                            case NxModuleType_SpawnRate:
-                                            {
-                                                ImGui::TextDisabled("SpawnRate");
-                                            } break;
-                                            case NxModuleType_SpawnBurst:
-                                            {
-                                                ImGui::TextDisabled("SpawnBurst");
-                                            } break;
-                                            } }, nullptr);
-                }
-                if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
-                {
-                    module = ui::SelectedModule{i, static_cast<NxModuleQueueIndex>(j), ui::MODULE_INDEX_NONE, false};
+                                                *ctx->module = {ctx->emitter_index, ctx->queue_index, ctx->index, false};
+                                            }
+                                            ImGui::PopID();
+                                            ++ctx->index; }, &function_ctx);
                 }
 
                 if (ImGui::BeginPopup("AddModulePopup"))
@@ -214,8 +234,18 @@ static void setup_emitters(AppContext &ctx, NxEmitter &add_emitter, ui::Selected
                         {
                             NxModuleSpawnBurst spawn_burst = {
                                 .particle_count = 10,
+                                .trigger_count  = 3,
                             };
                             Nx_modules_add_SpawnBurst(&e.modules, static_cast<NxModuleQueueIndex>(j), spawn_burst);
+                            ImGui::CloseCurrentPopup();
+                        }
+                        if (ImGui::Selectable("Add Velocity"))
+                        {
+                            NxModuleAddVelocity add_velocity = {
+                                   .direction = {0, 0, 0},
+                                   .speed = 1.0f, 
+                            } ;
+                            Nx_modules_add_AddVelocity(&e.modules, static_cast<NxModuleQueueIndex>(j), add_velocity);
                             ImGui::CloseCurrentPopup();
                         }
                     }
@@ -246,7 +276,7 @@ static void setup_module(AppContext &ctx, ui::SelectedModule &module)
         ImGui::TextUnformatted("Settings");
         ImGui::Checkbox("Test", &e.config.enabled);
     }
-    else
+    else if (module.module_index == ui::MODULE_INDEX_NONE)
     {
         switch (module.queue_index)
         {
@@ -258,6 +288,52 @@ static void setup_module(AppContext &ctx, ui::SelectedModule &module)
         default:
             break;
         }
+    }
+    else
+    {
+        struct FunctionContext
+        {
+            i32     index;
+            i32     selected_index;
+            ImFont *header_font;
+        } function_ctx = {
+            .selected_index = module.module_index,
+            .header_font    = ctx.header_font,
+        };
+
+        Nx_modules_for_each(&e.config.modules, module.queue_index, [](NxModuleType type, void *module_data, void *userdata)
+                            {
+                            auto ctx = static_cast<FunctionContext *>(userdata);
+                            ImGui::PushFont(ctx->header_font);
+                            ImGui::TextUnformatted(MODULE_TYPE_NAMES[type]);
+                            ImGui::PopFont();
+
+                            if (ctx->index == ctx->selected_index)
+                            {
+                                switch (type)
+                                {
+                                case NxModuleType_SpawnRate:
+                                {
+                                    NxModuleSpawnRate *spawn_rate = static_cast<NxModuleSpawnRate *>(module_data);
+
+                                    ImGui::DragFloat("Emitter Speed", &spawn_rate->emit_speed, 0.05f);
+                                    spawn_rate->emit_speed = std::max(spawn_rate->emit_speed, 0.0f);
+                                } break;
+                                case NxModuleType_SpawnBurst:
+                                {
+                                } break;
+                                case NxModuleType_AddVelocity:
+                                {
+                                    NxModuleAddVelocity *add_velocity = static_cast<NxModuleAddVelocity *>(module_data);
+                                    ImGui::DragFloat3("Direction", &add_velocity->direction.x, 0.05f);
+                                    ImGui::DragFloat("Speed", &add_velocity->speed, 0.05f);
+                                    add_velocity->speed = std::max(add_velocity->speed, 0.0f);
+
+                                } break;
+                                default: break; 
+                                }
+                            }
+                            ++ctx->index; }, &function_ctx);
     }
 
     ImGui::End();

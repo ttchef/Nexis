@@ -2,15 +2,21 @@
 #pragma once
 
 #include <Nexis/types.h>
+#include <Nexis/math.h>
 
-#define MODULES(MODULE, FIELD)          \
-    MODULE(                             \
-        SpawnRate,                      \
-        FIELD(NxF32, emit_speed)        \
-            FIELD(NxF32, elapsed_time)) \
-    MODULE(                             \
-        SpawnBurst,                     \
-        FIELD(NxU32, particle_count))
+#define MODULES(MODULE, FIELD)           \
+    MODULE(                              \
+        SpawnRate,                       \
+        FIELD(NxF32, emit_speed)         \
+            FIELD(NxF32, elapsed_time))  \
+    MODULE(                              \
+        SpawnBurst,                      \
+        FIELD(NxU32, particle_count)     \
+            FIELD(NxU32, trigger_count)) \
+    MODULE(                              \
+        AddVelocity,                     \
+        FIELD(NxVec3, direction)         \
+            FIELD(NxF32, speed))
 
 typedef enum
 {
@@ -46,7 +52,10 @@ typedef struct
 typedef enum
 {
     NxModuleQueue_None = -1,
+    NxModuleQueue_EmitterSpawn,
     NxModuleQueue_EmitterUpdate,
+    NxModuleQueue_ParticleSpawn,
+    NxModuleQueue_ParticleUpdate,
     NxModuleQueue_Count,
 } NxModuleQueueIndex;
 
