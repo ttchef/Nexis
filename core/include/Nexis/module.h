@@ -3,11 +3,11 @@
 
 #include <Nexis/types.h>
 
-#define MODULES(MODULE, FIELD) \
-    MODULE(                    \
-        SpawnRate,              \
-        FIELD(NxU32, test0)    \
-        FIELD(NxU32, test1) \
+#define MODULES(MODULE, FIELD)    \
+    MODULE(                       \
+        SpawnRate,                \
+        FIELD(NxF32, emit_speed) \
+        FIELD(NxF32, elapsed_time)\
     )
 
 typedef enum
@@ -29,7 +29,7 @@ typedef struct
 #define MODULE(name, ...) \
     typedef struct        \
     {                     \
-        __VA_ARGS__     \
+        __VA_ARGS__       \
     } NxModule##name;
 MODULES(MODULE, FIELD)
 #undef FIELD
@@ -53,13 +53,13 @@ typedef struct
     NxModuleQueue queues[NxModuleQueue_Count];
 } NxModules;
 
-typedef void (*Nx_for_each_module_func)(NxModuleType type, void *data);
+typedef void (*Nx_for_each_module_func)(NxModuleType type, void *module_data, void *userdata);
 
 void Nx_modules_create(NxModules *out);
 
 void Nx_modules_destroy(NxModules *modules);
 
-void Nx_modules_for_each(NxModules *modules, NxModuleQueueIndex queue, Nx_for_each_module_func func);
+void Nx_modules_for_each(NxModules *modules, NxModuleQueueIndex queue, Nx_for_each_module_func func, void *userdata);
 
 // NOTE: Add module functions
 #define FIELD(...)

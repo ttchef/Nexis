@@ -81,7 +81,7 @@ void Nx_modules_destroy(NxModules *modules)
     }
 }
 
-void Nx_modules_for_each(NxModules *modules, NxModuleQueueIndex queue, Nx_for_each_module_func func)
+void Nx_modules_for_each(NxModules *modules, NxModuleQueueIndex queue, Nx_for_each_module_func func, void *userdata)
 {
     if (!modules || !func)
     {
@@ -102,7 +102,7 @@ void Nx_modules_for_each(NxModules *modules, NxModuleQueueIndex queue, Nx_for_ea
 
         void *data = at + sizeof(NxModuleHeader);
 
-        func(header->type, data);
+        func(header->type, data, userdata);
 
         at += header->size;
     }

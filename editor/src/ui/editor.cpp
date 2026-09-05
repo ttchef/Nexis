@@ -179,8 +179,8 @@ static void setup_emitters(AppContext &ctx, NxEmitter &add_emitter, ui::Selected
                     if (ImGui::Button("Add Spawn Rate"))
                     {
                         NxModuleSpawnRate spawn_rate = {
-                            .test0 = 67,
-                            .test1 = 187,
+                            .emit_speed = 2.0f,
+                            .elapsed_time = 0.0f,
                         };
                         Nx_modules_add_SpawnRate(&e.modules, static_cast<NxModuleQueueIndex>(j), spawn_rate);
                         ImGui::CloseCurrentPopup();
