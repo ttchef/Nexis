@@ -223,28 +223,19 @@ static void setup_emitters(AppContext &ctx, NxEmitter &add_emitter, ui::Selected
                     {
                         if (ImGui::Selectable("Spawn Rate"))
                         {
-                            NxModuleSpawnRate spawn_rate = {
-                                .emit_speed   = 2.0f,
-                                .elapsed_time = 0.0f,
-                            };
+                            NxModuleSpawnRate spawn_rate = Nx_module_SpawnRate_make_default();
                             Nx_modules_add_SpawnRate(&e.modules, static_cast<NxModuleQueueIndex>(j), spawn_rate);
                             ImGui::CloseCurrentPopup();
                         }
                         if (ImGui::Selectable("Spawn Burst"))
                         {
-                            NxModuleSpawnBurst spawn_burst = {
-                                .particle_count = 10,
-                                .trigger_count  = 3,
-                            };
+                            NxModuleSpawnBurst spawn_burst = Nx_module_SpawnBurst_make_default();
                             Nx_modules_add_SpawnBurst(&e.modules, static_cast<NxModuleQueueIndex>(j), spawn_burst);
                             ImGui::CloseCurrentPopup();
                         }
                         if (ImGui::Selectable("Add Velocity"))
                         {
-                            NxModuleAddVelocity add_velocity = {
-                                   .direction = {0, 0, 0},
-                                   .speed = 1.0f, 
-                            } ;
+                            NxModuleAddVelocity add_velocity = Nx_module_AddVelocity_make_default();
                             Nx_modules_add_AddVelocity(&e.modules, static_cast<NxModuleQueueIndex>(j), add_velocity);
                             ImGui::CloseCurrentPopup();
                         }

@@ -110,7 +110,7 @@ void Nx_modules_for_each(NxModules *modules, NxModuleQueueIndex queue, Nx_for_ea
 
 // NOTE: Add module functions
 #define FIELD(...)
-#define MODULE(name, ...)                                                                        \
+#define MODULE(name, queue_index, ...)                                                                        \
     void Nx_modules_add_##name(NxModules *modules, NxModuleQueueIndex queue, NxModule##name module) \
     {                                                                                            \
         if (!modules)                                                                            \
