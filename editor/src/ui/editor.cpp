@@ -20,6 +20,10 @@ static const char *EMITTER_BLENDING_NAMES[] = {
     "Additive",
 };
 
+static const char *MODULE_QUEUE_TYPE_NAMES[] = {
+    "Emitter Update",
+};
+
 static void setup_editor_dockspace()
 {
     ImGuiViewport *viewport = ImGui::GetMainViewport();
@@ -103,7 +107,7 @@ static AppState setup_menu(AppContext &ctx)
     return state;
 }
 
-static void setup_emitters(AppContext &ctx, NxEmitter &add_emitter)
+static void setup_emitters(AppContext &ctx, NxEmitter &add_emitter, ui::SelectedModule &module)
 {
     ImGui::Begin("Emitters");
 
@@ -121,7 +125,7 @@ static void setup_emitters(AppContext &ctx, NxEmitter &add_emitter)
         if (ImGui::Button("Create Emitter"))
         {
             Nx_system_add_emitter(&ctx.project->system, &add_emitter);
-            add_emitter = NxEmitter{};
+            Nx_emitter_create(&add_emitter);
             ImGui::CloseCurrentPopup();
         }
         ImGui::EndDisabled();
@@ -143,6 +147,47 @@ static void setup_emitters(AppContext &ctx, NxEmitter &add_emitter)
             ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.0f * ctx.dpi_scale);
             ImGui::BeginChild("emitter_container", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY);
 
+            ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.0f * ctx.dpi_scale);
+            ImGui::BeginChild("emitter_settings", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY);
+            if (ImGui::Selectable("Emitter Settings"))
+            {
+                module = ui::SelectedModule{NxModuleQueue_None, i, true};
+            }
+            ImGui::EndChild();
+            ImGui::PopStyleVar();
+
+            ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.0f * ctx.dpi_scale);
+            ImGui::BeginChild("emitter_settings", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY);
+            for (u32 j = 0; j < NxModuleQueue_Count; j++)
+            {
+                if (ImGui::Selectable(MODULE_QUEUE_TYPE_NAMES[j]))
+                {
+                    module = ui::SelectedModule{static_cast<NxModuleQueueType>(j), i};
+                }
+
+                ImGui::SameLine();
+
+                if (ImGui::Button("+"))
+                {
+                    ImGui::OpenPopup("AddModulePopup");
+                }
+                if (ImGui::BeginPopup("AddModulePopup"))
+                {
+                    if (ImGui::Button("Add Spawn Rate"))
+                    {
+                        NxModuleSpawnRate spawn_rate = {
+                            .test0 = 67,
+                            .test1 = 187,  
+                        };
+                        Nx_modules_add_SpawnRate(&e.modules, static_cast<NxModuleQueueType>(j), spawn_rate);
+                        ImGui::CloseCurrentPopup();
+                    }
+                    ImGui::EndPopup();
+                }
+            }
+            ImGui::EndChild();
+            ImGui::PopStyleVar();
+
             ImGui::EndChild();
             ImGui::PopStyleVar();
         }
@@ -152,9 +197,29 @@ static void setup_emitters(AppContext &ctx, NxEmitter &add_emitter)
     ImGui::End();
 }
 
-static void setup_module()
+static void setup_module(AppContext &ctx, ui::SelectedModule &module)
 {
     ImGui::Begin("Module");
+
+    if (module.settings)
+    {
+        auto &e = ctx.project->system.emitters[module.emitter_index];
+        ImGui::TextUnformatted("Settings");
+        ImGui::Checkbox("Test", &e.config.enabled);
+    }
+    else
+    {
+        switch (module.type)
+        {
+        case NxModuleQueue_EmitterUpdate:
+        {
+            ImGui::TextUnformatted("Emitter Update");
+        }
+        break;
+        default:
+            break;
+        }
+    }
 
     ImGui::End();
 }
@@ -255,12 +320,13 @@ static void setup_assets(AppContext &ctx)
                 {"Pictues", "png"},
             };
 
-            if (NFD::OpenDialog(out_path, filters, ARRAY_COUNT(filters)) != NFD_OKAY)
+            auto result = NFD::OpenDialog(out_path, filters, ARRAY_COUNT(filters));
+            if (result != NFD_OKAY && result != NFD_CANCEL)
             {
                 std::cout << "Filedialog error: " << NFD::GetError() << std::endl;
                 std::exit(1);
             }
-            else
+            else if (result != NFD_CANCEL)
             {
                 ctx.asset_manager->load_texture(out_path.get());
             }
@@ -277,7 +343,7 @@ Editor::Editor()
 {
     scene                = LoadRenderTexture(2560, 1440);
     scene_texture_active = false;
-    add_emitter          = NxEmitter{};
+    Nx_emitter_create(&add_emitter);
 }
 
 AppState Editor::draw(AppContext &ctx)
@@ -286,8 +352,8 @@ AppState Editor::draw(AppContext &ctx)
 
     setup_editor_dockspace();
     state = setup_menu(ctx);
-    setup_emitters(ctx, add_emitter);
-    setup_module();
+    setup_emitters(ctx, add_emitter, module);
+    setup_module(ctx, module);
     setup_viewport(scene, scene_texture_active);
     setup_assets(ctx);
 

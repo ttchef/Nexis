@@ -1,6 +1,8 @@
 
 add_library(nexis_core STATIC
   src/particle.c
+  src/alloc.c
+  src/module.c
 )
 add_library(Nexis::Core ALIAS nexis_core)
 

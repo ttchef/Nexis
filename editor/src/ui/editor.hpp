@@ -10,6 +10,14 @@
 
 namespace ui
 {
+    
+struct SelectedModule
+{
+    NxModuleQueueType type;
+    u32 emitter_index;
+    bool settings;
+};
+    
 struct Editor
 {
     RenderTexture2D scene;
@@ -17,6 +25,7 @@ struct Editor
     bool scene_texture_active;
 
     NxEmitter add_emitter;
+    SelectedModule module;
 
     Editor();
     AppState draw(AppContext &ctx);

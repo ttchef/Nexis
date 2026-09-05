@@ -2,6 +2,7 @@
 #pragma once
 
 #include <Nexis/math.h>
+#include <Nexis/module.h>
 #include <Nexis/types.h>
 
 // NOTE: Forward declaration
@@ -44,11 +45,11 @@ typedef enum
 // when the emitter gets exported this is the only data that gets saved
 typedef struct
 {
-    NxParticles     particles;
-    NxChar          name[32];
-    NxBool          enabled;
-    NxTextureHandle texture;
-    NxBlending      blending;
+    NxParticles particles;
+    NxChar      name[32];
+    NxBool      enabled;
+    NxBlending  blending;
+    NxModules   modules;
 } NxEmitterConfig;
 
 // NOTE: Runtime data which is just default constructed and changed
