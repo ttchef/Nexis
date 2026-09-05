@@ -60,7 +60,7 @@ static void on_particle_spawn_module(NxModuleType type, void *module_data, void 
     {
         NxModuleAddVelocity *add_velocity = module_data;
 
-        data->particle->velocity = Nx_vec3_scale(add_velocity->direction, add_velocity->speed);
+        data->particle->velocity = Nx_vec3_scale(Nx_vec3_norm(add_velocity->direction), add_velocity->speed);
     } break;
     default: break;
     }
