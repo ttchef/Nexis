@@ -6,8 +6,8 @@
 #include <utils.hpp>
 
 #include <algorithm>
-#include <iostream>
 #include <cstring>
+#include <iostream>
 #include <ranges>
 
 #include <imgui.h>
@@ -17,7 +17,7 @@
 
 static const char *EMITTER_BLENDING_NAMES[] = {
     "Opaque",
-    "Additive",  
+    "Additive",
 };
 
 static void setup_editor_dockspace()
@@ -49,10 +49,12 @@ static void setup_editor_dockspace()
         ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->WorkSize);
 
         ImGuiID dock_viewport_id = dockspace_id;
-        ImGuiID dock_settings_id = ImGui::DockBuilderSplitNode(dock_viewport_id, ImGuiDir_Right, 0.30f, nullptr, &dock_viewport_id);
+        ImGuiID dock_emitter_id  = ImGui::DockBuilderSplitNode(dock_viewport_id, ImGuiDir_Right, 0.35f, nullptr, &dock_viewport_id);
+        ImGuiID dock_module_id   = ImGui::DockBuilderSplitNode(dock_emitter_id, ImGuiDir_Right, 0.50f, nullptr, &dock_emitter_id);
         ImGuiID dock_assets_id   = ImGui::DockBuilderSplitNode(dock_viewport_id, ImGuiDir_Down, 0.30f, nullptr, &dock_viewport_id);
 
-        ImGui::DockBuilderDockWindow("Settings", dock_settings_id);
+        ImGui::DockBuilderDockWindow("Emitters", dock_emitter_id);
+        ImGui::DockBuilderDockWindow("Module", dock_module_id);
         ImGui::DockBuilderDockWindow("Viewport", dock_viewport_id);
         ImGui::DockBuilderDockWindow("Assets", dock_assets_id);
 
@@ -63,20 +65,9 @@ static void setup_editor_dockspace()
     ImGui::End();
 }
 
-namespace ui
-{
-Editor::Editor()
-{
-    scene                = LoadRenderTexture(2560, 1440);
-    scene_texture_active = false;
-    add_emitter          = NxEmitter{};
-}
-
-AppState Editor::draw(AppContext &ctx)
+static AppState setup_menu(AppContext &ctx)
 {
     AppState state = AppState::Editor;
-
-    setup_editor_dockspace();
 
     if (ImGui::BeginMainMenuBar())
     {
@@ -109,7 +100,12 @@ AppState Editor::draw(AppContext &ctx)
         ImGui::EndMainMenuBar();
     }
 
-    ImGui::Begin("Settings");
+    return state;
+}
+
+static void setup_emitters(AppContext &ctx, NxEmitter &add_emitter)
+{
+    ImGui::Begin("Emitters");
 
     if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
     {
@@ -118,8 +114,8 @@ AppState Editor::draw(AppContext &ctx)
 
     if (ImGui::BeginPopup("AddEmitterPopup"))
     {
-        ImGui::InputTextWithHint("##Emitter Name", "Emitter name...", add_emitter.name, sizeof(add_emitter.name));
-        bool can_create = std::strlen(add_emitter.name) != 0;
+        ImGui::InputTextWithHint("##Emitter Name", "Emitter name...", add_emitter.config.name, sizeof(add_emitter.config.name));
+        bool can_create = std::strlen(add_emitter.config.name) != 0;
 
         ImGui::BeginDisabled(!can_create);
         if (ImGui::Button("Create Emitter"))
@@ -135,7 +131,7 @@ AppState Editor::draw(AppContext &ctx)
 
     for (u32 i = 0; i < Nx_system_emitter_count(&ctx.project->system); i++)
     {
-        auto &e = ctx.project->system.emitters[i];
+        auto &e = ctx.project->system.emitters[i].config;
 
         ImGui::PushID(i);
 
@@ -147,37 +143,6 @@ AppState Editor::draw(AppContext &ctx)
             ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.0f * ctx.dpi_scale);
             ImGui::BeginChild("emitter_container", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY);
 
-            ImGui::SeparatorText("Motion");
-
-            ImGui::SeparatorText("Appearance");
-
-            ImGui::Combo("Blend Mode", reinterpret_cast<i32 *>(&e.blending), EMITTER_BLENDING_NAMES[e.blending], std::strlen(EMITTER_BLENDING_NAMES[e.blending]));
-
-            ImVec2 texture_size = ImVec2(100.0f * ctx.dpi_scale, 100.0f * ctx.dpi_scale);
-            if (ImGui::BeginChild("texture", texture_size, ImGuiChildFlags_Borders))
-            {
-                auto tex = ctx.asset_manager->textures.find(e.texture);
-                if (tex != ctx.asset_manager->textures.end())
-                {
-                    ImGui::Image(static_cast<ImTextureRef>(tex->second.handle.id), ImGui::GetContentRegionAvail());
-                }
-                else
-                {
-                    ImGui::Dummy(ImGui::GetContentRegionAvail());
-                }
-                if (ImGui::BeginDragDropTarget())
-                {
-                    if (auto payload = ImGui::AcceptDragDropPayload("asset_texture"))
-                    {
-                        if (payload->DataSize == sizeof(asset::TextureHandle))
-                        {
-                            e.texture = *static_cast<asset::TextureHandle *>(payload->Data);
-                        }
-                    }
-                    ImGui::EndDragDropTarget();
-                }
-            }
-            ImGui::EndChild();
             ImGui::EndChild();
             ImGui::PopStyleVar();
         }
@@ -185,7 +150,17 @@ AppState Editor::draw(AppContext &ctx)
     }
 
     ImGui::End();
+}
 
+static void setup_module()
+{
+    ImGui::Begin("Module");
+
+    ImGui::End();
+}
+
+static void setup_viewport(RenderTexture2D &scene, bool &scene_texture_active)
+{
     ImGui::Begin("Viewport");
 
     ImVec2 available = ImGui::GetContentRegionAvail();
@@ -213,7 +188,10 @@ AppState Editor::draw(AppContext &ctx)
         scene_texture_active = false;
     }
     ImGui::End();
+}
 
+static void setup_assets(AppContext &ctx)
+{
     ImGui::Begin("Assets");
 
     const f32 item_width  = 150.0f * ctx.dpi_scale;
@@ -291,6 +269,27 @@ AppState Editor::draw(AppContext &ctx)
     ImGui::EndChild();
 
     ImGui::End();
+}
+
+namespace ui
+{
+Editor::Editor()
+{
+    scene                = LoadRenderTexture(2560, 1440);
+    scene_texture_active = false;
+    add_emitter          = NxEmitter{};
+}
+
+AppState Editor::draw(AppContext &ctx)
+{
+    AppState state = AppState::Editor;
+
+    setup_editor_dockspace();
+    state = setup_menu(ctx);
+    setup_emitters(ctx, add_emitter);
+    setup_module();
+    setup_viewport(scene, scene_texture_active);
+    setup_assets(ctx);
 
     return state;
 }

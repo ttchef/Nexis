@@ -11,10 +11,11 @@ typedef NxU64 NxTextureHandle;
 
 // NOTE: This makes up the fields of a particle and all the dynamic arrays for the SoA
 #define Nx_PARTICLE_FIELDS(X) \
-    X(NxVec3, position) \
-    X(NxVec3, velocity) \
-    X(NxVec3, acceleration) \
-    X(NxVec3, scale)
+    X(NxVec3, position)       \
+    X(NxVec3, velocity)       \
+    X(NxVec3, acceleration)   \
+    X(NxVec3, scale)          \
+    X(NxF32, lifetime)
 
 // NOTE: Only used as parameter for 'Nx_emitter_add_particle'
 typedef struct
@@ -39,6 +40,8 @@ typedef enum
     NxBlendingAdditive,
 } NxBlending;
 
+// NOTE: This is all the data an emitter needs to work
+// when the emitter gets exported this is the only data that gets saved
 typedef struct
 {
     NxParticles     particles;
@@ -46,6 +49,19 @@ typedef struct
     NxBool          enabled;
     NxTextureHandle texture;
     NxBlending      blending;
+} NxEmitterConfig;
+
+// NOTE: Runtime data which is just default constructed and changed
+// by the simulation itself not configured by the user
+typedef struct
+{
+    NxF32 elapsed_time;
+} NxEmitterRuntime;
+
+typedef struct
+{
+    NxEmitterConfig  config;
+    NxEmitterRuntime runtime;
 } NxEmitter;
 
 void Nx_emitter_create(NxEmitter *out);

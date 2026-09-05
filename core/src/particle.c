@@ -10,7 +10,7 @@ void Nx_emitter_create(NxEmitter *out)
     }
     memset(out, 0, sizeof(NxEmitter));
 
-    NxParticles *particles = &out->particles;
+    NxParticles *particles = &out->config.particles;
 
 #define X(type, name) particles->name = Nx_darray_create(sizeof(type));
     Nx_PARTICLE_FIELDS(X)
@@ -24,7 +24,7 @@ void Nx_emitter_destroy(NxEmitter *emitter)
         return;
     }
 
-    NxParticles *particles = &emitter->particles;
+    NxParticles *particles = &emitter->config.particles;
 
 #define X(type, name) Nx_darray_destroy(particles->name); particles->name = NULL;
     Nx_PARTICLE_FIELDS(X)
@@ -38,7 +38,7 @@ void Nx_emitter_add_particle(NxEmitter *emitter, NxParticle particle)
         return;
     }
 
-    NxParticles *particles = &emitter->particles;
+    NxParticles *particles = &emitter->config.particles;
 
 #define X(type, name) !particles->name ||
     if (Nx_PARTICLE_FIELDS(X) 0)
@@ -68,7 +68,7 @@ void Nx_emitter_update_particles(NxEmitter *emitter, NxF32 delta_time)
         return;
     }
 
-    NxParticles *particles = &emitter->particles;
+    NxParticles *particles = &emitter->config.particles;
     particles_assert_same_len(particles);
 
     for (NxU32 i = 0; i < Nx_darray_len(particles->position); i++)
@@ -88,13 +88,13 @@ void Nx_emitter_render_particles(NxEmitter *emitter, NxRenderer *renderer)
         return;
     }
 
-    NxParticles *particles = &emitter->particles;
+    NxParticles *particles = &emitter->config.particles;
     particles_assert_same_len(particles);
 
     NxParticleBatch batch = {
         .particles = particles,
         .particle_count = Nx_darray_len(particles->position),
-        .blending = emitter->blending,
+        .blending = emitter->config.blending,
     };
 
     renderer->particles_draw(batch);
@@ -137,7 +137,7 @@ void Nx_system_add_emitter(NxSystem *system, NxEmitter *emitter)
     Nx_darray_push((void **)&system->emitters, emitter);
 
     // NOTE: Emitter resources will be managed from the system now
-#define X(type, name) emitter->particles.name = NULL;
+#define X(type, name) emitter->config.particles.name = NULL;
     Nx_PARTICLE_FIELDS(X)
 #undef X
 }
