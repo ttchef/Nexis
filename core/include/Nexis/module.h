@@ -32,7 +32,7 @@ typedef enum
 //
 // Parameter 4: Now follows a va args list of fields constructing the module struct.
 //
-
+//
 // NOTE: Working of the FIELD macro
 //
 // Parameter 1: Type of the field. This is the type of the field variable
@@ -72,14 +72,6 @@ typedef enum
         NxModuleQueue_ParticleUpdate,                \
         FIELD(NxVec3, direction, {0.0f, 0.0f, 0.0f}) \
             FIELD(NxF32, speed, 1.0f))
-
-static const NxU32 Nx_MODULE_QUEUE_LOOKUP[] = {
-#define Nx_FIELD(...)
-#define Nx_MODULE(name, display, queue_index, ...) queue_index,
-    Nx_MODULES(Nx_MODULE, Nx_FIELD)
-#undef Nx_MODULE
-#undef Nx_FIELD
-};
 
 static const char *Nx_MODULE_NAME_LOOKUP[] = {
 #define Nx_FIELD(...)
@@ -135,7 +127,7 @@ void Nx_modules_for_each(NxModules *modules, NxModuleQueueIndex queue, Nx_for_ea
 
 // NOTE: Add module functions
 #define Nx_FIELD(...)
-#define Nx_MODULE(name, display, queue_index, ...) void Nx_modules_add_##name(NxModules *modules, NxModuleQueueIndex queue, NxModule##name module);
+#define Nx_MODULE(name, display, queue_index, ...) void Nx_modules_add_##name(NxModules *modules, NxModule##name module);
 Nx_MODULES(Nx_MODULE, Nx_FIELD)
 #undef Nx_FIELD
 #undef Nx_MODULE

@@ -124,12 +124,16 @@ static void setup_add_module_menu(AppContext &ctx, NxEmitterConfig &e, u32 queue
         if (ImGui::BeginChild("module_list", ImVec2(250.0f * ctx.dpi_scale, 200.0f * ctx.dpi_scale), ImGuiChildFlags_Borders))
         {
 #define Nx_FIELD(...)
-#define Nx_MODULE(name, display, queue_index_module, ...)                                      \
-    if (search == std::string(display).substr(0, search.length()) && queue_index == queue_index_module && ui::widgets::SelectableHighlighted(display, search))                       \
-    {                                                                                          \
-        NxModule##name name = Nx_module_##name##_make_default();                               \
-        Nx_modules_add_##name(&e.modules, static_cast<NxModuleQueueIndex>(queue_index), name); \
-        ImGui::CloseCurrentPopup();                                                            \
+#define Nx_MODULE(name, display, queue_index_module, ...)                                               \
+    if (search == std::string(display).substr(0, search.length()) && queue_index == queue_index_module) \
+    {                                                                                                   \
+        if (ui::widgets::SelectableHighlighted(display, search) || ImGui::IsKeyPressed(ImGuiKey_Enter)) \
+        {                                                                                               \
+            NxModule##name name = Nx_module_##name##_make_default();                                    \
+            Nx_modules_add_##name(&e.modules, name);      \
+            search.clear();                                                                             \
+            ImGui::CloseCurrentPopup();                                                                 \
+        }                                                                                               \
     }
             Nx_MODULES(Nx_MODULE, Nx_FIELD)
 #undef Nx_MODULE

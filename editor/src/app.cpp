@@ -77,7 +77,7 @@ void App::draw()
         BeginMode3D(camera.raylib);
 
         BeginShaderMode(grid_shader.handle);
-        DrawPlane({0.0f, 0.0f, 0.0f}, {100.0f, 100.0f}, RED);
+        DrawPlane({0.0f, 0.0f, 0.0f}, {20.0f, 20.0f}, RED);
 
         EndShaderMode();
 
