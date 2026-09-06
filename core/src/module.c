@@ -87,9 +87,9 @@ void Nx_modules_for_each(NxModules *modules, NxModuleQueueIndex queue, Nx_for_ea
     {
         return;
     }
-    
-    NxModuleQueue *q = &modules->queues[queue];
-    NxU8 *at = q->data;
+
+    NxModuleQueue *q  = &modules->queues[queue];
+    NxU8          *at = q->data;
 
     while (at < q->data + q->used)
     {
@@ -109,30 +109,30 @@ void Nx_modules_for_each(NxModules *modules, NxModuleQueueIndex queue, Nx_for_ea
 }
 
 // NOTE: Add module functions
-#define FIELD(...)
-#define MODULE(name, queue_index, ...)                                                                        \
+#define Nx_FIELD(...)
+#define Nx_MODULE(name, display, queue_index, ...)                                                  \
     void Nx_modules_add_##name(NxModules *modules, NxModuleQueueIndex queue, NxModule##name module) \
-    {                                                                                            \
-        if (!modules)                                                                            \
-        {                                                                                        \
-            return;                                                                              \
-        }                                                                                        \
-                                                                                                 \
-        if (queue < 0 || queue >= NxModuleQueue_Count)                                            \
-        {                                                                                        \
-            return;                                                                              \
-        }                                                                                        \
-                                                                                                 \
-        NxModuleQueue *q = &modules->queues[queue];                                               \
-                                                                                                 \
-        NxModuleHeader header = {                                                                \
-            .type = NxModuleType_##name,                                                         \
-            .size = sizeof(NxModuleHeader) + sizeof(NxModule##name),                                                      \
-        };                                                                                       \
-                                                                                                 \
-        Nx_module_queue_push(q, &header, sizeof(header));                                        \
-        Nx_module_queue_push(q, &module, sizeof(module));                                        \
+    {                                                                                               \
+        if (!modules)                                                                               \
+        {                                                                                           \
+            return;                                                                                 \
+        }                                                                                           \
+                                                                                                    \
+        if (queue < 0 || queue >= NxModuleQueue_Count)                                              \
+        {                                                                                           \
+            return;                                                                                 \
+        }                                                                                           \
+                                                                                                    \
+        NxModuleQueue *q = &modules->queues[queue];                                                 \
+                                                                                                    \
+        NxModuleHeader header = {                                                                   \
+            .type = NxModuleType_##name,                                                            \
+            .size = sizeof(NxModuleHeader) + sizeof(NxModule##name),                                \
+        };                                                                                          \
+                                                                                                    \
+        Nx_module_queue_push(q, &header, sizeof(header));                                           \
+        Nx_module_queue_push(q, &module, sizeof(module));                                           \
     }
-MODULES(MODULE, FIELD)
-#undef FIELD
-#undef MODULE
+Nx_MODULES(Nx_MODULE, Nx_FIELD)
+#undef Nx_FIELD
+#undef Nx_MODULE

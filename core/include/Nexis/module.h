@@ -6,6 +6,8 @@
 
 typedef enum
 {
+    // NOTE: Important because the enum maps directly to indecies
+    // in the queue array of NxModules.
     NxModuleQueue_None = -1,
     NxModuleQueue_EmitterSpawn,
     NxModuleQueue_EmitterUpdate,
@@ -14,17 +16,22 @@ typedef enum
     NxModuleQueue_Count,
 } NxModuleQueueIndex;
 
-// NOTE: Working of MODULES macro
-// 
-// Parameter 1: Name of module. This will generate the appropriate
-// NxModule##name struct and NxModuleType_##name enum.
+// NOTE: Working of MODULE macro
 //
-// Parameter 2: Queue index. This indicated the emitter queue where the module
+// Parameter 1: Name of module. This will generate the appropriate
+// NxModule##name struct and NxModuleType_##name enum. It will also generate two
+// functions 'Nx_modules_add_##name' and 'Nx_module_##name##_make_default'.
+//
+// Parameter 2: Display name of the module. For example 'Spawn Burst' instead of the
+// struct name 'SpawnBurst'. This is not used in the core library but doesnt add any overhead
+// and makes is possible for other programs such as the editor to have less boilerplate code.
+//
+// Parameter 3: Queue index. This indicated the emitter queue where the module
 // should live. For example for an AddVelocity module the only emitter queue
 // where it belongs to is in ParticleSpawn because it acts as a initial velocity on spawn.
 //
-// Parameter 3: Now follows a va args list of fields constructing the module struct.
-// 
+// Parameter 4: Now follows a va args list of fields constructing the module struct.
+//
 
 // NOTE: Working of the FIELD macro
 //
@@ -39,44 +46,56 @@ typedef enum
 // This would be treated as multiple arguments to the macro so we need to make this one a va args list
 // to get it working.
 
-#define MODULES(MODULE, FIELD)                       \
+#define Nx_MODULES(MODULE, FIELD)                       \
     MODULE(                                          \
         SpawnRate,                                   \
+        "Spawn Rate",                                \
         NxModuleQueue_EmitterUpdate,                 \
         FIELD(NxF32, emit_speed, 2.0f)               \
             FIELD(NxF32, elapsed_time, 0.0f))        \
     MODULE(                                          \
         SpawnBurst,                                  \
+        "Spawn Burst",                               \
         NxModuleQueue_EmitterUpdate,                 \
         FIELD(NxU32, particle_count, 1)              \
             FIELD(NxU32, trigger_count, 1))          \
     MODULE(                                          \
         AddVelocity,                                 \
+        "Add Velocity",                              \
         NxModuleQueue_ParticleSpawn,                 \
         FIELD(NxVec3, direction, {0.0f, 0.0f, 0.0f}) \
             FIELD(NxF32, speed,                      \
                   1.0f))                             \
     MODULE(                                          \
         GravityForce,                                \
+        "Gravity Force",                             \
         NxModuleQueue_ParticleUpdate,                \
         FIELD(NxVec3, direction, {0.0f, 0.0f, 0.0f}) \
             FIELD(NxF32, speed, 1.0f))
 
-static const NxU32 Nx_QUEUE_LOOKUP[] = {
-#define FIELD(...)
-#define MODULE(name, queue_index, ...)
-    MODULES(MODULE, FIELD)
-#undef MODULE
-#undef FIELD
+static const NxU32 Nx_MODULE_QUEUE_LOOKUP[] = {
+#define Nx_FIELD(...)
+#define Nx_MODULE(name, display, queue_index, ...) queue_index,
+    Nx_MODULES(Nx_MODULE, Nx_FIELD)
+#undef Nx_MODULE
+#undef Nx_FIELD
+};
+
+static const char *Nx_MODULE_NAME_LOOKUP[] = {
+#define Nx_FIELD(...)
+#define Nx_MODULE(name, display, queue_index, ...) display,
+    Nx_MODULES(Nx_MODULE, Nx_FIELD)
+#undef Nx_MODULE
+#undef Nx_FIELD
 };
 
 typedef enum
 {
-#define FIELD(...)
-#define MODULE(name, queue_index, ...) NxModuleType_##name,
-    MODULES(MODULE, FIELD)
-#undef MODULE
-#undef FIELD
+#define Nx_FIELD(...)
+#define Nx_MODULE(name, display, queue_index, ...) NxModuleType_##name,
+    Nx_MODULES(Nx_MODULE, Nx_FIELD)
+#undef Nx_MODULE
+#undef Nx_FIELD
 } NxModuleType;
 
 typedef struct
@@ -85,15 +104,15 @@ typedef struct
     NxU32        size;
 } NxModuleHeader;
 
-#define FIELD(type, name, ...) type name;
-#define MODULE(name, queue_index, ...) \
-    typedef struct                     \
-    {                                  \
-        __VA_ARGS__                    \
+#define Nx_FIELD(type, name, ...) type name;
+#define Nx_MODULE(name, display, queue_index, ...) \
+    typedef struct                              \
+    {                                           \
+        __VA_ARGS__                             \
     } NxModule##name;
-MODULES(MODULE, FIELD)
-#undef MODULE
-#undef FIELD
+Nx_MODULES(Nx_MODULE, Nx_FIELD)
+#undef Nx_MODULE
+#undef Nx_FIELD
 
 typedef struct
 {
@@ -115,21 +134,20 @@ void Nx_modules_destroy(NxModules *modules);
 void Nx_modules_for_each(NxModules *modules, NxModuleQueueIndex queue, Nx_for_each_module_func func, void *userdata);
 
 // NOTE: Add module functions
-#define FIELD(...)
-#define MODULE(name, queue_index, ...) void Nx_modules_add_##name(NxModules *modules, NxModuleQueueIndex queue, NxModule##name module);
-MODULES(MODULE, FIELD)
-#undef FIELD
-#undef MODULE
+#define Nx_FIELD(...)
+#define Nx_MODULE(name, display, queue_index, ...) void Nx_modules_add_##name(NxModules *modules, NxModuleQueueIndex queue, NxModule##name module);
+Nx_MODULES(Nx_MODULE, Nx_FIELD)
+#undef Nx_FIELD
+#undef Nx_MODULE
 
 // NOTE: Make default functions
-#define FIELD(type, name, ...) __VA_ARGS__,
-#define MODULE(name, queue_index, ...) \
-static inline NxModule##name Nx_module_##name##_make_default(void)\
-{\
-    return (NxModule##name){\
-        __VA_ARGS__\
-    };\
-}
-MODULES(MODULE, FIELD)
-#undef MODULE
-#undef FIELD
+#define Nx_FIELD(type, name, ...) __VA_ARGS__,
+#define Nx_MODULE(name, display, queue_index, ...)                        \
+    static inline NxModule##name Nx_module_##name##_make_default(void) \
+    {                                                                  \
+        return (NxModule##name){                                       \
+            __VA_ARGS__};                                              \
+    }
+Nx_MODULES(Nx_MODULE, Nx_FIELD)
+#undef Nx_MODULE
+#undef Nx_FIELD

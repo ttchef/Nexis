@@ -20,19 +20,6 @@ static const char *EMITTER_BLENDING_NAMES[] = {
     "Additive",
 };
 
-static const char *MODULE_QUEUE_TYPE_NAMES[] = {
-    "Emitter Spawn",
-    "Emitter Update",
-    "Particle Spawn",
-    "Particle Update",
-};
-
-static const char *MODULE_TYPE_NAMES[] = {
-    "Spawn Rate",
-    "Spawn Burst",
-    "Add velocity",
-};
-
 static void setup_editor_dockspace()
 {
     ImGuiViewport *viewport = ImGui::GetMainViewport();
@@ -116,6 +103,36 @@ static AppState setup_menu(AppContext &ctx)
     return state;
 }
 
+static void setup_add_module_menu(AppContext &ctx, NxEmitterConfig &e, u32 queue_index)
+{
+    if (ImGui::BeginPopup("AddModulePopup"))
+    {
+        ImGui::SetNextItemWidth(250.0f * ctx.dpi_scale);
+
+        static std::string search;
+        ImGui::InputTextWithHint("##search", "Search modules...", &search);
+
+        ImGui::Separator();
+
+        if (ImGui::BeginChild("module_list", ImVec2(250.0f * ctx.dpi_scale, 200.0f * ctx.dpi_scale), ImGuiChildFlags_Borders))
+        {
+#define Nx_FIELD(...)
+#define Nx_MODULE(name, display, queue_index, ...)                                             \
+    if (ImGui::Selectable(display))                                                            \
+    {                                                                                          \
+        NxModule##name name = Nx_module_##name##_make_default();                               \
+        Nx_modules_add_##name(&e.modules, static_cast<NxModuleQueueIndex>(queue_index), name); \
+        ImGui::CloseCurrentPopup();                                                            \
+    }
+            Nx_MODULES(Nx_MODULE, Nx_FIELD)
+#undef Nx_MODULE
+#undef Nx_FIELD
+        }
+        ImGui::EndChild();
+        ImGui::EndPopup();
+    }
+}
+
 static void setup_emitters(AppContext &ctx, NxEmitter &add_emitter, ui::SelectedModule &module)
 {
     ImGui::Begin("Emitters");
@@ -178,7 +195,7 @@ static void setup_emitters(AppContext &ctx, NxEmitter &add_emitter, ui::Selected
                 }
                 ImGui::SameLine();
 
-                if (ImGui::CollapsingHeader(MODULE_QUEUE_TYPE_NAMES[j]))
+                if (ImGui::CollapsingHeader(Nx_MODULE_NAME_LOOKUP[j]))
                 {
                     if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
                     {
@@ -202,47 +219,15 @@ static void setup_emitters(AppContext &ctx, NxEmitter &add_emitter, ui::Selected
                                             auto ctx = static_cast<FunctionContext *>(userdata);
                                             ImGui::PushID(ctx->index);
 
-                                            if (ImGui::Selectable(MODULE_TYPE_NAMES[type]))
+                                            if (ImGui::Selectable(Nx_MODULE_NAME_LOOKUP[type]))
                                             {
                                                 *ctx->module = {ctx->emitter_index, ctx->queue_index, ctx->index, false};
                                             }
                                             ImGui::PopID();
                                             ++ctx->index; }, &function_ctx);
                 }
+                setup_add_module_menu(ctx, e, j);
 
-                if (ImGui::BeginPopup("AddModulePopup"))
-                {
-                    ImGui::SetNextItemWidth(250.0f * ctx.dpi_scale);
-
-                    static std::string search;
-                    ImGui::InputTextWithHint("##search", "Search modules...", &search);
-
-                    ImGui::Separator();
-
-                    if (ImGui::BeginChild("module_list", ImVec2(250.0f * ctx.dpi_scale, 200.0f * ctx.dpi_scale), ImGuiChildFlags_Borders))
-                    {
-                        if (ImGui::Selectable("Spawn Rate"))
-                        {
-                            NxModuleSpawnRate spawn_rate = Nx_module_SpawnRate_make_default();
-                            Nx_modules_add_SpawnRate(&e.modules, static_cast<NxModuleQueueIndex>(j), spawn_rate);
-                            ImGui::CloseCurrentPopup();
-                        }
-                        if (ImGui::Selectable("Spawn Burst"))
-                        {
-                            NxModuleSpawnBurst spawn_burst = Nx_module_SpawnBurst_make_default();
-                            Nx_modules_add_SpawnBurst(&e.modules, static_cast<NxModuleQueueIndex>(j), spawn_burst);
-                            ImGui::CloseCurrentPopup();
-                        }
-                        if (ImGui::Selectable("Add Velocity"))
-                        {
-                            NxModuleAddVelocity add_velocity = Nx_module_AddVelocity_make_default();
-                            Nx_modules_add_AddVelocity(&e.modules, static_cast<NxModuleQueueIndex>(j), add_velocity);
-                            ImGui::CloseCurrentPopup();
-                        }
-                    }
-                    ImGui::EndChild();
-                    ImGui::EndPopup();
-                }
                 ImGui::EndChild();
                 ImGui::PopStyleVar();
                 ImGui::PopID();
@@ -296,7 +281,7 @@ static void setup_module(AppContext &ctx, ui::SelectedModule &module)
                             {
                             auto ctx = static_cast<FunctionContext *>(userdata);
                             ImGui::PushFont(ctx->header_font);
-                            ImGui::TextUnformatted(MODULE_TYPE_NAMES[type]);
+                            ImGui::TextUnformatted(Nx_MODULE_NAME_LOOKUP[type]);
                             ImGui::PopFont();
 
                             if (ctx->index == ctx->selected_index)
