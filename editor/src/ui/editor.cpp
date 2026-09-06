@@ -20,6 +20,13 @@ static const char *EMITTER_BLENDING_NAMES[] = {
     "Additive",
 };
 
+static const char *MODULE_QUEUE_TYPE_NAMES[] = {
+    "Emitter Spawn",
+    "Emitter Update",
+    "Particle Spawn",
+    "Particle Update",
+};
+
 static void setup_editor_dockspace()
 {
     ImGuiViewport *viewport = ImGui::GetMainViewport();
@@ -117,8 +124,8 @@ static void setup_add_module_menu(AppContext &ctx, NxEmitterConfig &e, u32 queue
         if (ImGui::BeginChild("module_list", ImVec2(250.0f * ctx.dpi_scale, 200.0f * ctx.dpi_scale), ImGuiChildFlags_Borders))
         {
 #define Nx_FIELD(...)
-#define Nx_MODULE(name, display, queue_index, ...)                                             \
-    if (ImGui::Selectable(display))                                                            \
+#define Nx_MODULE(name, display, queue_index_module, ...)                                      \
+    if (search == std::string(display).substr(0, search.length()) && queue_index == queue_index_module && ui::widgets::SelectableHighlighted(display, search))                       \
     {                                                                                          \
         NxModule##name name = Nx_module_##name##_make_default();                               \
         Nx_modules_add_##name(&e.modules, static_cast<NxModuleQueueIndex>(queue_index), name); \
@@ -195,7 +202,7 @@ static void setup_emitters(AppContext &ctx, NxEmitter &add_emitter, ui::Selected
                 }
                 ImGui::SameLine();
 
-                if (ImGui::CollapsingHeader(Nx_MODULE_NAME_LOOKUP[j]))
+                if (ImGui::CollapsingHeader(MODULE_QUEUE_TYPE_NAMES[j]))
                 {
                     if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
                     {

@@ -4,40 +4,37 @@
 #include <random.hpp>
 
 #include <algorithm>
+#include <cstring>
 
 #include <imgui.h>
 
 namespace ui::widgets
 {
-static bool DragRandomFloat(const char *label, RandomF32 &r, f32 speed = 0.05f, f32 min = 0.0f)
+static bool SelectableHighlighted(const char *label, const std::string &search, bool selected = false)
 {
-    bool changed = false;
-
     ImGui::PushID(label);
+    
+    bool pressed = ImGui::Selectable("##selectable", selected, 0, ImVec2(0.0f, ImGui::GetTextLineHeightWithSpacing()));
 
-    ImGui::SetNextItemWidth(ImGui::CalcItemWidth() * 0.55f);
-    changed |= ImGui::DragFloat("##base", &r.value, speed);
-    if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Right))
+    ImVec2 text_pos = ImGui::GetItemRectMin();
+
+    text_pos.x += std::floor(ImGui::GetStyle().FramePadding.x);
+    text_pos.y += std::floor(ImGui::GetStyle().FramePadding.y);
+
+    ImDrawList *draw_list = ImGui::GetWindowDrawList();
+
+    const usize label_len = std::strlen(label);
+    const usize match_len = std::min(search.size(), label_len);
+
+    if (match_len > 0)
     {
-        ImGui::SetTooltip("%s", "Actual value");
+        draw_list->AddText(text_pos, IM_COL32(255, 220, 80, 255), label, label + match_len);
+        ImVec2 match_size = ImGui::CalcTextSize(label, label + match_len);
+        text_pos.x += std::floor(match_size.x);
     }
-
-    ImGui::SameLine(0.0f, 4.0f);
-    ImGui::SetNextItemWidth(ImGui::CalcItemWidth() * 0.35f);
-    changed |= ImGui::DragFloat("##offset", &r.offset, speed);
-    if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Right))
-    {
-        ImGui::SetTooltip("%s", "Offset range for random values");
-    }
-
-    ImGui::SameLine();
-    ImGui::TextUnformatted(label);
-
-    r.value  = std::max(r.value, min);
-    r.offset = std::max(r.offset, 0.0f);
+    draw_list->AddText(text_pos, ImGui::GetColorU32(ImGuiCol_Text), label + match_len, label + label_len);
 
     ImGui::PopID();
-
-    return changed;
-}	
+    return pressed;
+}
 } // namesapce ui
