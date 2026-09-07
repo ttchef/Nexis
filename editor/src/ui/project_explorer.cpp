@@ -130,6 +130,7 @@ AppState ProjectExplorer::draw(AppContext &ctx)
             if (ImGui::Button("Create Project"))
             {
                 ctx.project->header.file_path = std::format("{}/{}{}", utils::path_abs(PROJECT_PATH), ctx.project->header.file_name, NEXIS_PF_EX);
+                ctx.project->create();
                 state                  = AppState::Editor;
             }
             ImGui::EndDisabled();
@@ -186,7 +187,7 @@ AppState ProjectExplorer::draw(AppContext &ctx)
 
             if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
             {
-                ctx.project->header = project;
+                ctx.project->load(project);
                 state        = AppState::Editor;
             }
 

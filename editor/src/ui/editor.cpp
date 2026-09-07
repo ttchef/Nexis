@@ -88,8 +88,7 @@ static AppState setup_menu(AppContext &ctx)
             }
             if (ImGui::MenuItem("Save"))
             {
-                // TODO: Implement
-                assert(0);
+                ctx.project->store();
             }
 
             ImGui::Separator();

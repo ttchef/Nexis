@@ -63,6 +63,7 @@ add_executable(Nexis
     src/app.cpp
     src/utils.cpp
     src/asset_manager.cpp
+    src/project.cpp
     src/ui/context.cpp
     src/ui/editor.cpp
     src/ui/project_explorer.cpp

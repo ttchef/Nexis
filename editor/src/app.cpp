@@ -18,7 +18,6 @@ App::App()
     grid_shader.handle         = LoadShader(utils::path_abs("shaders/grid.vert").c_str(), utils::path_abs("shaders/grid.frag").c_str());
     grid_shader.camera_pos_loc = GetShaderLocation(grid_shader.handle, "camera_pos");
 
-    Nx_system_create(&project.system);
     renderer = {
         .particles_draw = Nx_backend_raylib_render,
     };
@@ -28,7 +27,7 @@ App::App()
 
 App::~App()
 {
-    Nx_system_destroy(&project.system);
+    project.destroy();
     NFD::Quit();
 }
 
