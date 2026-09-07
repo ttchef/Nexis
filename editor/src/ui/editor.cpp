@@ -459,9 +459,9 @@ AppState Editor::draw(AppContext &ctx)
 
     setup_editor_dockspace();
     state = setup_menu(ctx);
-    setup_emitters(ctx, add_emitter, module);
-    setup_module(ctx, module);
-    setup_viewport(scene, scene_texture_active);
+    setup_emitters(ctx, this->add_emitter, this->module);
+    setup_module(ctx, this->module);
+    setup_viewport(this->scene, this->scene_texture_active);
     setup_assets(ctx);
 
     return state;

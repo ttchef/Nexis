@@ -118,9 +118,9 @@ Context::Context(f32 dpi_scale)
     ImFontConfig config;
     config.SizePixels = 16.0f * dpi_scale;
 
-    normal_font = io.Fonts->AddFontFromFileTTF(utils::path_abs("assets/fonts/ovelion.ttf").c_str(), 16.0f * dpi_scale, &config);
-    medium_font = io.Fonts->AddFontFromFileTTF(utils::path_abs("assets/fonts/ovelion.ttf").c_str(), 22.0f * dpi_scale, &config);
-    header_font = io.Fonts->AddFontFromFileTTF(utils::path_abs("assets/fonts/ovelion.ttf").c_str(), 28.0f * dpi_scale, &config);
+    this->normal_font = io.Fonts->AddFontFromFileTTF(utils::path_abs("assets/fonts/ovelion.ttf").c_str(), 16.0f * dpi_scale, &config);
+    this->medium_font = io.Fonts->AddFontFromFileTTF(utils::path_abs("assets/fonts/ovelion.ttf").c_str(), 22.0f * dpi_scale, &config);
+    this->header_font = io.Fonts->AddFontFromFileTTF(utils::path_abs("assets/fonts/ovelion.ttf").c_str(), 28.0f * dpi_scale, &config);
     
     io.FontDefault    = normal_font;
     io.Fonts->Build();
@@ -140,12 +140,13 @@ AppState Context::draw(AppState state, AppContext &ctx)
     {
     case AppState::ProjectExplorer:
     {
-        new_state = explorer.draw(ctx);
+        new_state = this->explorer.draw(ctx);
     } break;
     case AppState::Editor:
     {
-        new_state = editor.draw(ctx);
+        new_state = this->editor.draw(ctx);
     } break;
+    default: break;
     }
 
     rlImGuiEnd();

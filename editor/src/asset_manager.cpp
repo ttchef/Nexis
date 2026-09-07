@@ -3,17 +3,18 @@
 
 #include <functional>
 #include <iostream>
+#include <ranges>
 
 namespace asset
 {
 TextureHandle Texture::hash() const
 {
-    return std::hash<std::string>()(path);
+    return std::hash<std::string>()(this->path);
 }
 
 Manager::~Manager()
 {
-    for (auto &[key, tex] : textures)
+    for (auto &tex : this->textures | std::views::values)
     {
         if (tex.handle.id)
         {
@@ -33,7 +34,7 @@ TextureHandle Manager::load_texture(const std::string &path)
 
     Texture       texture = {handle, path, GetFileNameWithoutExt(path.c_str())};
     TextureHandle key     = texture.hash();
-    textures[key]         = texture;
+    this->textures[key]         = texture;
 
     return key;
 }

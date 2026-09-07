@@ -15,25 +15,25 @@ App::App()
 
     utils::load_projects(&projects);
 
-    grid_shader.handle         = LoadShader(utils::path_abs("shaders/grid.vert").c_str(), utils::path_abs("shaders/grid.frag").c_str());
-    grid_shader.camera_pos_loc = GetShaderLocation(grid_shader.handle, "camera_pos");
+    this->grid_shader.handle         = LoadShader(utils::path_abs("shaders/grid.vert").c_str(), utils::path_abs("shaders/grid.frag").c_str());
+    this->grid_shader.camera_pos_loc = GetShaderLocation(grid_shader.handle, "camera_pos");
 
-    renderer = {
+    this->renderer = {
         .particles_draw = Nx_backend_raylib_render,
     };
 
-    camera = SceneCamera{};
+    this->camera = SceneCamera{};
 }
 
 App::~App()
 {
-    project.destroy();
+    this->project.destroy();
     NFD::Quit();
 }
 
 bool App::should_close() const
 {
-    return WindowShouldClose() || state == AppState::Exit;
+    return WindowShouldClose() || this->state == AppState::Exit;
 }
 
 AppContext App::make_context()
@@ -53,34 +53,34 @@ AppContext App::make_context()
 void App::update()
 {
     AppContext ctx = make_context();
-    window.update();
+    this->window.update();
     f32 dt = GetFrameTime();
 
-    camera.update(ui.editor.scene_texture_active, dt);
-    SetShaderValue(grid_shader.handle, grid_shader.camera_pos_loc, &camera.raylib.position, SHADER_UNIFORM_VEC3);
+    this->camera.update(this->ui.editor.scene_texture_active, dt);
+    SetShaderValue(this->grid_shader.handle, this->grid_shader.camera_pos_loc, &this->camera.raylib.position, SHADER_UNIFORM_VEC3);
 
-    if (state == AppState::Editor)
+    if (this->state == AppState::Editor)
     {
-        Nx_system_update_emitters(&project.system, dt);
+        Nx_system_update_emitters(&this->project.system, dt);
     }
 }
 
 void App::draw()
 {
     AppContext ctx = make_context();
-    if (state == AppState::Editor)
+    if (this->state == AppState::Editor)
     {
-        BeginTextureMode(ui.editor.scene);
+        BeginTextureMode(this->ui.editor.scene);
         ClearBackground(BLACK);
 
-        BeginMode3D(camera.raylib);
+        BeginMode3D(this->camera.raylib);
 
-        BeginShaderMode(grid_shader.handle);
+        BeginShaderMode(this->grid_shader.handle);
         DrawPlane({0.0f, 0.0f, 0.0f}, {20.0f, 20.0f}, RED);
 
         EndShaderMode();
 
-        Nx_system_render_emitters(&project.system, &renderer);
+        Nx_system_render_emitters(&this->project.system, &this->renderer);
 
         EndMode3D();
         EndTextureMode();
@@ -88,6 +88,6 @@ void App::draw()
 
     BeginDrawing();
     ClearBackground(BLACK);
-    state = ui.draw(state, ctx);
+    this->state = this->ui.draw(this->state, ctx);
     EndDrawing();
 }

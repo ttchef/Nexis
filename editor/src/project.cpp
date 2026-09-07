@@ -7,24 +7,27 @@
 
 void Project::create()
 {
-	Nx_system_create(&system);
-	initialized = true;
+	Nx_system_create(&this->system);
+	this->initialized = true;
 }
 
 void Project::destroy()
 {
-	if (initialized)
+	if (this->initialized)
 	{
-		Nx_system_destroy(&system);
-		initialized = false;
+		Nx_system_destroy(&this->system);
+		this->initialized = false;
 	}
 }
 
 void Project::load(ProjectHeader header)
 {
-	destroy();
+	this->destroy();
+
+	this->header = header;
+	
 	// TODO: Implement after NxSystem serializing is finished	
-	create();
+	this->create();
 }
 
 void Project::store()

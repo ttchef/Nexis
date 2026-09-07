@@ -69,15 +69,15 @@ namespace ui
 {
 ProjectExplorer::ProjectExplorer()
 {
-    wallpaper     = LoadTexture(utils::path_abs("assets/textures/wallpaper.png").c_str());
-    hovered_child = -1;
+    this->wallpaper     = LoadTexture(utils::path_abs("assets/textures/wallpaper.png").c_str());
+    this->hovered_child = -1;
 }
 
 ProjectExplorer::~ProjectExplorer()
 {
-    if (wallpaper.id)
+    if (this->wallpaper.id)
     {
-        UnloadTexture(wallpaper);
+        UnloadTexture(this->wallpaper);
     }
 }
 
@@ -91,14 +91,14 @@ AppState ProjectExplorer::draw(AppContext &ctx)
 
     if (ImGui::BeginTable("layout", 2, ImGuiTableFlags_SizingStretchSame))
     {
-        ImGui::TableSetupColumn("wallpaper");
+        ImGui::TableSetupColumn("this->wallpaper");
         ImGui::TableSetupColumn("projects");
 
         ImGui::TableNextRow();
 
         ImGui::TableSetColumnIndex(0);
 
-        const f32 image_aspect = static_cast<f32>(wallpaper.width) / static_cast<f32>(wallpaper.height);
+        const f32 image_aspect = static_cast<f32>(this->wallpaper.width) / static_cast<f32>(this->wallpaper.height);
         ImVec2    available    = ImGui::GetContentRegionAvail();
 
         f32 image_width  = available.x;
@@ -110,7 +110,7 @@ AppState ProjectExplorer::draw(AppContext &ctx)
             image_width  = image_height * image_aspect;
         }
 
-        ImGui::Image((ImTextureID)wallpaper.id, ImVec2(image_width, image_height));
+        ImGui::Image((ImTextureID)this->wallpaper.id, ImVec2(image_width, image_height));
 
         ImGui::TableSetColumnIndex(1);
         ImGui::PushFont(ctx.header_font);
@@ -146,7 +146,7 @@ AppState ProjectExplorer::draw(AppContext &ctx)
         {
             ImGui::PushID(i);
 
-            if (hovered_child == i)
+            if (this->hovered_child == i)
             {
                 ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyleColorVec4(ImGuiCol_TabHovered));
             }
@@ -175,14 +175,14 @@ AppState ProjectExplorer::draw(AppContext &ctx)
 
             ImGui::EndChild();
 
-            if (hovered_child == i)
+            if (this->hovered_child == i)
             {
-                hovered_child = -1;
+                this->hovered_child = -1;
                 ImGui::PopStyleColor();
             }
             if (ImGui::IsItemHovered())
             {
-                hovered_child = i;
+                this->hovered_child = i;
             }
 
             if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
