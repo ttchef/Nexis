@@ -129,8 +129,7 @@ static void setup_add_module_menu(AppContext &ctx, NxEmitterConfig &e, u32 queue
     {                                                                                                   \
         if (ui::widgets::SelectableHighlighted(display, search) || ImGui::IsKeyPressed(ImGuiKey_Enter)) \
         {                                                                                               \
-            NxModule##name name = Nx_module_##name##_make_default();                                    \
-            Nx_modules_add_##name(&e.modules, name);      \
+            Nx_modules_add_##name(&e.modules, Nx_module_##name##_make_default());                       \
             search.clear();                                                                             \
             ImGui::CloseCurrentPopup();                                                                 \
         }                                                                                               \
@@ -291,12 +290,12 @@ static void setup_module(AppContext &ctx, ui::SelectedModule &module)
         Nx_modules_for_each(&e.config.modules, module.queue_index, [](NxModuleType type, void *module_data, void *userdata)
                             {
                             auto ctx = static_cast<FunctionContext *>(userdata);
-                            ImGui::PushFont(ctx->header_font);
-                            ImGui::TextUnformatted(Nx_MODULE_NAME_LOOKUP[type]);
-                            ImGui::PopFont();
-
                             if (ctx->index == ctx->selected_index)
                             {
+                                ImGui::PushFont(ctx->header_font);
+                                ImGui::TextUnformatted(Nx_MODULE_NAME_LOOKUP[type]);
+                                ImGui::PopFont();
+
                                 switch (type)
                                 {
                                 case NxModuleType_SpawnRate:
@@ -315,7 +314,13 @@ static void setup_module(AppContext &ctx, ui::SelectedModule &module)
                                     ImGui::DragFloat3("Direction", &add_velocity->direction.x, 0.05f);
                                     ImGui::DragFloat("Speed", &add_velocity->speed, 0.05f);
                                     add_velocity->speed = std::max(add_velocity->speed, 0.0f);
-
+                                } break;
+                                case NxModuleType_GravityForce:
+                                {
+                                    NxModuleGravityForce *gravity_force = static_cast<NxModuleGravityForce *>(module_data);
+                                    ImGui::DragFloat3("Direction", &gravity_force->direction.x, 0.05f);
+                                    ImGui::DragFloat("Strength", &gravity_force->strength, 0.05f);
+                                    gravity_force->strength = std::max(gravity_force->strength, 0.0f);
                                 } break;
                                 default: break; 
                                 }

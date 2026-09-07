@@ -38,7 +38,7 @@ public:
 	App();
 	~App();
 
-	bool should_close();
+	bool should_close() const;
 	void update();
 	void draw();
 	AppContext make_context();

@@ -18,12 +18,12 @@ typedef NxU64 NxTextureHandle;
     X(NxVec3, scale)
 
 // NOTE: Only used as parameter for 'Nx_emitter_add_particle'
-typedef struct
+struct NxParticle
 {
 #define X(type, name) type name;
     Nx_PARTICLE_FIELDS(X)
 #undef X
-} NxParticle;
+};
 
 typedef struct
 {
@@ -58,11 +58,11 @@ typedef struct
     NxF32 elapsed_time;
 } NxEmitterRuntime;
 
-typedef struct
+struct NxEmitter
 {
     NxEmitterConfig  config;
     NxEmitterRuntime runtime;
-} NxEmitter;
+};
 
 void Nx_emitter_create(NxEmitter *out);
 

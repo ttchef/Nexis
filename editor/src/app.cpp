@@ -32,7 +32,7 @@ App::~App()
     NFD::Quit();
 }
 
-bool App::should_close()
+bool App::should_close() const
 {
     return WindowShouldClose() || state == AppState::Exit;
 }

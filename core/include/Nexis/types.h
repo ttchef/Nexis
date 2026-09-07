@@ -23,3 +23,7 @@ typedef char NxChar;
 #define Nx_ARRAY_COUNT(x) (sizeof(x) / sizeof((x)[0]))
 #define Nx_MAX(a, b)              ((a) > (b) ? (a) : (b))
 #define Nx_MIN(a, b)              ((a) < (b) ? (a) : (b))
+
+// NOTE: Forward declaration for public api types
+typedef struct NxParticle NxParticle;
+typedef struct NxEmitter NxEmitter;

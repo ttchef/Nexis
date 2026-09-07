@@ -45,8 +45,11 @@ typedef enum
 // for special types like vectors where the definition requires ',' itself example: {0.0f, 0.0f, 0.0f}.
 // This would be treated as multiple arguments to the macro so we need to make this one a va args list
 // to get it working.
-
-#define Nx_MODULES(MODULE, FIELD)                       \
+//
+// NOTE: To add a module just add a new MODULE() declaration here
+// and define the corresponding behavour function in module_behaviour.c
+// The funtion decleration will be automatically generated in module_behaviour.h.
+#define Nx_MODULES(MODULE, FIELD)                    \
     MODULE(                                          \
         SpawnRate,                                   \
         "Spawn Rate",                                \
@@ -71,7 +74,11 @@ typedef enum
         "Gravity Force",                             \
         NxModuleQueue_ParticleUpdate,                \
         FIELD(NxVec3, direction, {0.0f, 0.0f, 0.0f}) \
-            FIELD(NxF32, speed, 1.0f))
+            FIELD(NxF32, strength, 1.0f))            \
+    MODULE(                                          \
+        SolveVelocityAndForces,                      \
+        "Solve Velocity And Forces",                 \
+        NxModuleQueue_ParticleUpdate, )
 
 static const char *Nx_MODULE_NAME_LOOKUP[] = {
 #define Nx_FIELD(...)
@@ -98,15 +105,15 @@ typedef struct
 
 #define Nx_FIELD(type, name, ...) type name;
 #define Nx_MODULE(name, display, queue_index, ...) \
-    typedef struct                              \
-    {                                           \
-        __VA_ARGS__                             \
+    typedef struct                                 \
+    {                                              \
+        __VA_ARGS__                                \
     } NxModule##name;
 Nx_MODULES(Nx_MODULE, Nx_FIELD)
 #undef Nx_MODULE
 #undef Nx_FIELD
 
-typedef struct
+    typedef struct
 {
     NxU8 *data;
     NxU64 used;
@@ -134,12 +141,12 @@ Nx_MODULES(Nx_MODULE, Nx_FIELD)
 
 // NOTE: Make default functions
 #define Nx_FIELD(type, name, ...) __VA_ARGS__,
-#define Nx_MODULE(name, display, queue_index, ...)                        \
+#define Nx_MODULE(name, display, queue_index, ...)                     \
     static inline NxModule##name Nx_module_##name##_make_default(void) \
     {                                                                  \
         return (NxModule##name){                                       \
             __VA_ARGS__};                                              \
     }
-Nx_MODULES(Nx_MODULE, Nx_FIELD)
+    Nx_MODULES(Nx_MODULE, Nx_FIELD)
 #undef Nx_MODULE
 #undef Nx_FIELD

@@ -1,17 +1,7 @@
 
 #include <Nexis/particle.h>
 #include <darray.h>
-
-typedef struct
-{
-    NxParticle *particle;    
-} NxParticleOnSpawnData;
-
-typedef struct
-{
-    NxEmitter *emitter;
-    NxF32      delta_time;
-} NxEmitterOnUpdateData;
+#include <module_behaviour.h>
 
 void Nx_emitter_create(NxEmitter *out)
 {
@@ -27,7 +17,7 @@ void Nx_emitter_create(NxEmitter *out)
     Nx_PARTICLE_FIELDS(X)
 #undef X
 
-    Nx_modules_create(&out->config.modules);
+        Nx_modules_create(&out->config.modules);
 
     out->config.enabled = true;
 }
@@ -50,19 +40,20 @@ void Nx_emitter_destroy(NxEmitter *emitter)
         Nx_modules_destroy(&emitter->config.modules);
 }
 
-static void on_particle_spawn_module(NxModuleType type, void *module_data, void *userdata)
+static void on_event(NxModuleType type, void *module_data, void *userdata)
 {
-    NxParticleOnSpawnData *data = userdata;
-
     switch (type)
     {
-    case NxModuleType_AddVelocity:
-    {
-        NxModuleAddVelocity *add_velocity = module_data;
-
-        data->particle->velocity = Nx_vec3_scale(Nx_vec3_norm(add_velocity->direction), add_velocity->speed);
+#define Nx_FIELD(...)
+#define Nx_MODULE(name, display, queue_index, ...)         \
+    case NxModuleType_##name:                              \
+    {                                                      \
+        Nx_module_behaviour_##name(userdata, module_data); \
     } break;
-    default: break;
+        Nx_MODULES(Nx_MODULE, Nx_FIELD)
+#undef Nx_MODULE
+#undef Nx_FIELD
+            default : break;
     }
 }
 
@@ -84,9 +75,13 @@ void Nx_emitter_add_particle(NxEmitter *emitter, NxParticle particle)
 #undef X
 
     NxParticleOnSpawnData data = {
-          .particle = &particle,  
+        .particle = &particle,
     };
-    Nx_modules_for_each(&emitter->config.modules, NxModuleQueue_ParticleSpawn, on_particle_spawn_module, &data);
+    NxCallbackData callback_data = {
+        .queue = NxModuleQueue_ParticleSpawn,
+        .data  = &data,
+    };
+    Nx_modules_for_each(&emitter->config.modules, NxModuleQueue_ParticleSpawn, on_event, &callback_data);
 
 #define X(type, name) Nx_darray_push((void **)&particles->name, &particle.name);
     Nx_PARTICLE_FIELDS(X)
@@ -99,54 +94,6 @@ static void particles_assert_same_len(NxParticles *particles)
 #define X(type, name) assert(Nx_darray_len(particles->name) == position_len);
     Nx_PARTICLE_FIELDS(X)
 #undef X
-}
-
-static void on_emitter_update_module(NxModuleType type, void *module_data, void *userdata)
-{
-    NxEmitterOnUpdateData *data = userdata;
-
-    switch (type)
-    {
-    case NxModuleType_SpawnRate:
-    {
-        NxModuleSpawnRate *spawn_rate = module_data;
-        spawn_rate->elapsed_time += data->delta_time;
-
-        const NxF32 interval = 1.0f / spawn_rate->emit_speed;
-
-        while (spawn_rate->elapsed_time >= interval)
-        {
-            spawn_rate->elapsed_time -= interval;
-
-            Nx_emitter_add_particle(data->emitter, (NxParticle){
-                                                       .position = {0, 0, 0},
-                                                       .velocity = {0, 0, 0},
-                                                       .scale    = {0.1, 0.1f, 0.1f},
-                                                   });
-        }
-    }
-    break;
-    case NxModuleType_SpawnBurst:
-    {
-        NxModuleSpawnBurst *spawn_burst = module_data;
-
-        if (spawn_burst->trigger_count > 1)
-        {
-            --spawn_burst->trigger_count;
-            for (NxU32 i = 0; i < spawn_burst->particle_count; i++)
-            {
-                Nx_emitter_add_particle(data->emitter, (NxParticle){
-                                                           .position = {0, 0, 0},
-                                                           .velocity = {0, 0, 0},
-                                                           .scale    = {0.1, 0.1f, 0.1f},
-                                                       });
-            }
-        }
-    }
-    break;
-    default:
-        break;
-    }
 }
 
 void Nx_emitter_update_particles(NxEmitter *emitter, NxF32 delta_time)
@@ -163,15 +110,26 @@ void Nx_emitter_update_particles(NxEmitter *emitter, NxF32 delta_time)
         .emitter    = emitter,
         .delta_time = delta_time
     };
-    Nx_modules_for_each(&emitter->config.modules, NxModuleQueue_EmitterUpdate, on_emitter_update_module, &data);
+    NxCallbackData callback_data = {
+          .queue = NxModuleQueue_EmitterUpdate,
+          .data = &data,  
+    };
+    Nx_modules_for_each(&emitter->config.modules, NxModuleQueue_EmitterUpdate, on_event, &callback_data);
 
     for (NxU32 i = 0; i < Nx_darray_len(particles->position); i++)
     {
-        // TODO: Add more than a constant gravity
-        particles->acceleration[i] = Nx_vec3(0.0f, 0.0f, 0.0f);
-        particles->velocity[i]     = Nx_vec3_add(particles->velocity[i], Nx_vec3_scale(particles->acceleration[i], delta_time));
-        particles->position[i]     = Nx_vec3_add(particles->position[i], Nx_vec3_scale(particles->velocity[i], delta_time));
-        particles->acceleration[i] = Nx_vec3(0.0f, 0.0f, 0.0f);
+        NxParticleOnUpdateData data = {
+#define X(type, name) .name = &particles->name[i],
+            Nx_PARTICLE_FIELDS(X)
+#undef X
+            .delta_time = delta_time,
+        };
+
+        NxCallbackData callback_data = {
+            .queue = NxModuleQueue_ParticleUpdate,
+            .data  = &data,
+        };
+        Nx_modules_for_each(&emitter->config.modules, NxModuleQueue_ParticleUpdate, on_event, &callback_data);
     }
 }
 
@@ -227,6 +185,10 @@ void Nx_system_add_emitter(NxSystem *system, NxEmitter *emitter)
         fprintf(stderr, "[NEXIS] Tried to call 'Nx_system_add_emitter' on an uninitialized system\n");
         return;
     }
+
+    NxEmitterOnSpawnData on_spawn = {
+        .emitter = emitter,
+    };
 
     Nx_darray_push((void **)&system->emitters, emitter);
 
