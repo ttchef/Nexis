@@ -40,12 +40,14 @@ typedef enum
     NxBlendingAdditive,
 } NxBlending;
 
+#define Nx_EMITTER_NAME_LEN (32)
+
 // NOTE: This is all the data an emitter needs to work
 // when the emitter gets exported this is the only data that gets saved
 typedef struct
 {
     NxParticles particles;
-    NxChar      name[32];
+    NxChar      name[Nx_EMITTER_NAME_LEN];
     NxBool      enabled;
     NxBlending  blending;
     NxModules   modules;

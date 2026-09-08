@@ -4,6 +4,7 @@ add_library(nexis_core STATIC
   src/alloc.c
   src/module.c
   src/module_behaviour.c
+  src/serializer.c
 )
 add_library(Nexis::Core ALIAS nexis_core)
 

@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
 
 typedef int8_t NxI8;
 typedef int16_t NxI16;
@@ -19,6 +20,8 @@ typedef double NxF64;
 
 typedef bool NxBool;
 typedef char NxChar;
+
+typedef size_t NxUsize;
 
 #define Nx_ARRAY_COUNT(x) (sizeof(x) / sizeof((x)[0]))
 #define Nx_MAX(a, b)              ((a) > (b) ? (a) : (b))

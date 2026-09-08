@@ -12,6 +12,6 @@
 #define Nx_MB(n) ((n) << 20)
 #define Nx_GB(n) ((n) << 30)
 
-void *Nx_virtual_alloc(NxU64 size);
+void *Nx_virtual_alloc(NxUsize size);
 
-void Nx_virtual_free(void *mem, NxU64 size);
+void Nx_virtual_free(void *mem, NxUsize size);

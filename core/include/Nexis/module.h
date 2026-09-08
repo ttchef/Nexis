@@ -100,7 +100,7 @@ typedef enum
 typedef struct
 {
     NxModuleType type;
-    NxU32        size;
+    NxUsize        size;
 } NxModuleHeader;
 
 #define Nx_FIELD(type, name, ...) type name;
@@ -116,7 +116,7 @@ Nx_MODULES(Nx_MODULE, Nx_FIELD)
     typedef struct
 {
     NxU8 *data;
-    NxU64 used;
+    NxUsize used;
 } NxModuleQueue;
 
 typedef struct

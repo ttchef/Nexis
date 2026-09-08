@@ -17,7 +17,7 @@
 #include <string.h>
 #include <sys/mman.h>
 
-void *Nx_virtual_alloc(NxU64 size)
+void *Nx_virtual_alloc(NxUsize size)
 {
     void *mem = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (mem == MAP_FAILED)
@@ -28,7 +28,7 @@ void *Nx_virtual_alloc(NxU64 size)
     return mem;
 }
 
-void Nx_virtual_free(void *mem, NxU64 size)
+void Nx_virtual_free(void *mem, NxUsize size)
 {
     NxI32 result = munmap(mem, size);
     if (result == -1)
@@ -43,7 +43,7 @@ void Nx_virtual_free(void *mem, NxU64 size)
 
 // Windows
 
-void *Nx_virtual_alloc(NxU64 size)
+void *Nx_virtual_alloc(NxUsize size)
 {
     void *mem = VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     if (!mem)
@@ -54,7 +54,7 @@ void *Nx_virtual_alloc(NxU64 size)
     return mem;
 }
 
-void Nx_virtual_free(void *mem, NxU64 size)
+void Nx_virtual_free(void *mem, NxUsize size)
 {
     BOOL result = VirtualFree(mem, 0, MEM_RELEASE);
     if (!result)
