@@ -19,4 +19,4 @@ typedef struct
 NxBool Nx_system_store(const NxSystem *system, NxBuffer *out);
 
 // NOTE: Also only loading from memory.
-void Nx_system_load(NxBuffer *buffer, NxSystem *out);
+void Nx_system_load(NxSystem *system, NxBuffer *buffer);

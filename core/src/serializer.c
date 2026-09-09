@@ -8,67 +8,109 @@ typedef struct
     NxU8   *data;
     NxUsize size;
     NxUsize at;
-} NxWriter;
+} NxMemoryStream;
 
-static inline void write(NxWriter *writer, void *data, NxUsize size)
+// NOTE: Write functions
+
+static inline void write(NxMemoryStream *stream, void *data, NxUsize size)
 {
     // NOTE: I actually dont know if it should be <= idk future me solve this
-    assert(writer->at + size < writer->size);
-    memcpy(&writer->data[writer->at], data, size);
-    writer->at += size;
+    assert(stream->at + size < stream->size);
+    memcpy(&stream->data[stream->at], data, size);
+    stream->at += size;
 }
 
-static inline void write_NxF32(NxWriter *writer, NxF32 v)
+static inline void write_NxF32(NxMemoryStream *stream, NxF32 v)
 {
-    write(writer, &v, sizeof(v));
+    write(stream, &v, sizeof(v));
 }
 
-static inline void write_NxU32(NxWriter *writer, NxU32 v)
+static inline void write_NxU32(NxMemoryStream *stream, NxU32 v)
 {
-    write(writer, &v, sizeof(v));
+    write(stream, &v, sizeof(v));
 }
 
-void write_NxVec3(NxWriter *writer, NxVec3 v)
+static inline void write_NxU64(NxMemoryStream *stream, NxU64 v)
 {
-    write_NxF32(writer, v.x);
-    write_NxF32(writer, v.y);
-    write_NxF32(writer, v.z);
+    write(stream, &v, sizeof(v));
 }
 
-void write_particles(NxWriter *writer, NxParticles *particles)
+void write_NxVec3(NxMemoryStream *stream, NxVec3 v)
 {
-    NxU32 particle_count = Nx_darray_len(particles->position);
-    write_NxU32(writer, particle_count);
-    
-    for (NxU32 i = 0; i < particle_count; i++)
-    {
-#define X(type, name) \
-    write_##type(writer, particles->name[i]);
-        Nx_PARTICLE_FIELDS(X)
-#undef X
-    }
+    write_NxF32(stream, v.x);
+    write_NxF32(stream, v.y);
+    write_NxF32(stream, v.z);
 }
 
-void write_name(NxWriter *writer, NxChar name[Nx_EMITTER_NAME_LEN])
+void write_name(NxMemoryStream *stream, NxChar name[Nx_EMITTER_NAME_LEN])
 {
-    write(writer, name, Nx_EMITTER_NAME_LEN);
+    write(stream, name, Nx_EMITTER_NAME_LEN);
 }
 
-void write_enabled(NxWriter *writer, NxBool enabled)
+void write_enabled(NxMemoryStream *stream, NxBool enabled)
 {
-    write(writer, &enabled, sizeof(enabled));
+    write(stream, &enabled, sizeof(enabled));
 }
 
-void write_modules(NxWriter *writer, NxModules *modules)
+void write_modules(NxMemoryStream *stream, NxModules *modules)
 {
     for (NxU32 i = 0; i < NxModuleQueue_Count; i++)
     {
         NxModuleQueue *q = &modules->queues[i];
         
-        write_NxU32(writer, q->used);
-        write(writer, q->data, q->used);
+        write_NxU64(stream, q->used);
+        write(stream, q->data, q->used);
     }
 }
+// -------
+
+// NOTE: Read functions
+
+static inline void *read(NxMemoryStream *stream, NxUsize size)
+{
+    assert(stream->at - size <= stream->at);
+    stream->at -= size;
+    return &stream->data[stream->size - stream->at];
+}
+
+static inline NxU8 read_NxU8(NxMemoryStream *stream)
+{
+    return *(NxU8 *)read(stream, sizeof(NxU8));
+}
+
+static inline NxU32 read_NxU32(NxMemoryStream *stream)
+{
+    return *(NxU32 *)read(stream, sizeof(NxU32));
+}
+
+static inline NxU32 read_NxU64(NxMemoryStream *stream)
+{
+    return *(NxU32 *)read(stream, sizeof(NxU32));
+}
+
+void read_name(NxMemoryStream *stream, NxChar name[Nx_EMITTER_NAME_LEN])
+{
+    name = read(stream, Nx_EMITTER_NAME_LEN); 
+}
+
+void read_enabled(NxMemoryStream *stream, NxBool *enabled)
+{
+    *enabled = read_NxU8(stream);
+}
+
+void read_modules(NxMemoryStream *stream, NxModules *modules)
+{
+    for (NxU32 i = 0; i < NxModuleQueue_Count; i++)
+    {
+        NxModuleQueue *q = &modules->queues[i];
+
+        q->used = read_NxU64(stream);
+        void *data = read(stream, q->used);
+        memcpy(q->data, data, q->used);
+    }
+}
+
+// -------
 
 NxBool Nx_system_store(const NxSystem *system, NxBuffer *out)
 {
@@ -79,33 +121,52 @@ NxBool Nx_system_store(const NxSystem *system, NxBuffer *out)
 
     const NxU64 size = Nx_GB(10ull);
 
-    NxWriter writer = {
+    NxMemoryStream stream = {
           .at = 0,
           .data = Nx_virtual_alloc(size),
           .size = size,
     };
 
     NxU32 emitter_count = Nx_darray_len(system->emitters);
-    write_NxU32(&writer, emitter_count);
+    write_NxU32(&stream, emitter_count);
 
     for (NxU32 i = 0; i < emitter_count; i++)
     {
         NxEmitterConfig *e = &system->emitters[i].config;
 
-        write_particles(&writer, &e->particles);
-        write_name(&writer, e->name);
-        write_enabled(&writer, e->enabled);
-        write_modules(&writer, &e->modules);
+        write_name(&stream, e->name);
+        write_enabled(&stream, e->enabled);
+        write_modules(&stream, &e->modules);
     }
 
     *out = (NxBuffer){
-        .data = writer.data,
-        .size = writer.at, 
+        .data = stream.data,
+        .size = stream.at, 
     };
 
     return true;
 }
 
-void Nx_system_load(NxBuffer *buffer, NxSystem *out)
+void Nx_system_load(NxSystem *system, NxBuffer *buffer)
 {
+    NxMemoryStream stream = {
+        .at = buffer->size,
+        .size = buffer->size,
+        .data = buffer->data,    
+    };
+    
+    NxU32 emitter_count = read_NxU32(&stream);
+    printf("Emitter count: %u\n", emitter_count);
+
+    for (NxU32 i = 0; i < emitter_count; i++)
+    {
+        NxEmitter e = {0};
+        Nx_emitter_create(&e);
+
+        read_name(&stream, e.config.name);
+        read_enabled(&stream, &e.config.enabled);
+        read_modules(&stream, &e.config.modules);
+
+        Nx_system_add_emitter(system, &e);
+    }
 }

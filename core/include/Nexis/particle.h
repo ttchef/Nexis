@@ -46,7 +46,6 @@ typedef enum
 // when the emitter gets exported this is the only data that gets saved
 typedef struct
 {
-    NxParticles particles;
     NxChar      name[Nx_EMITTER_NAME_LEN];
     NxBool      enabled;
     NxBlending  blending;
@@ -57,6 +56,7 @@ typedef struct
 // by the simulation itself not configured by the user
 typedef struct
 {
+    NxParticles particles;
     NxF32 elapsed_time;
 } NxEmitterRuntime;
 

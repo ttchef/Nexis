@@ -11,7 +11,7 @@ void Nx_emitter_create(NxEmitter *out)
     }
     memset(out, 0, sizeof(NxEmitter));
 
-    NxParticles *particles = &out->config.particles;
+    NxParticles *particles = &out->runtime.particles;
 
 #define X(type, name) particles->name = Nx_darray_create(sizeof(type));
     Nx_PARTICLE_FIELDS(X)
@@ -29,7 +29,7 @@ void Nx_emitter_destroy(NxEmitter *emitter)
         return;
     }
 
-    NxParticles *particles = &emitter->config.particles;
+    NxParticles *particles = &emitter->runtime.particles;
 
 #define X(type, name)                   \
     Nx_darray_destroy(particles->name); \
@@ -64,7 +64,7 @@ void Nx_emitter_add_particle(NxEmitter *emitter, NxParticle particle)
         return;
     }
 
-    NxParticles *particles = &emitter->config.particles;
+    NxParticles *particles = &emitter->runtime.particles;
 
 #define X(type, name) !particles->name ||
     if (Nx_PARTICLE_FIELDS(X) 0)
@@ -103,7 +103,7 @@ void Nx_emitter_update_particles(NxEmitter *emitter, NxF32 delta_time)
         return;
     }
 
-    NxParticles *particles = &emitter->config.particles;
+    NxParticles *particles = &emitter->runtime.particles;
     particles_assert_same_len(particles);
 
     NxEmitterOnUpdateData data = {
@@ -140,7 +140,7 @@ void Nx_emitter_render_particles(NxEmitter *emitter, NxRenderer *renderer)
         return;
     }
 
-    NxParticles *particles = &emitter->config.particles;
+    NxParticles *particles = &emitter->runtime.particles;
     particles_assert_same_len(particles);
 
     NxParticleBatch batch = {
@@ -193,7 +193,7 @@ void Nx_system_add_emitter(NxSystem *system, NxEmitter *emitter)
     Nx_darray_push((void **)&system->emitters, emitter);
 
     // NOTE: Emitter resources will be managed from the system now
-#define X(type, name) emitter->config.particles.name = NULL;
+#define X(type, name) emitter->runtime.particles.name = NULL;
     Nx_PARTICLE_FIELDS(X)
 #undef X
 }
