@@ -14,8 +14,7 @@ typedef struct
 
 static inline void write(NxMemoryStream *stream, void *data, NxUsize size)
 {
-    // NOTE: I actually dont know if it should be <= idk future me solve this
-    assert(stream->at + size < stream->size);
+    assert(stream->at + size <= stream->size);
     memcpy(&stream->data[stream->at], data, size);
     stream->at += size;
 }
@@ -69,8 +68,9 @@ void write_modules(NxMemoryStream *stream, NxModules *modules)
 static inline void *read(NxMemoryStream *stream, NxUsize size)
 {
     assert(stream->at - size <= stream->at);
+    void *data = &stream->data[stream->size - stream->at];
     stream->at -= size;
-    return &stream->data[stream->size - stream->at];
+    return data;
 }
 
 static inline NxU8 read_NxU8(NxMemoryStream *stream)
@@ -83,14 +83,14 @@ static inline NxU32 read_NxU32(NxMemoryStream *stream)
     return *(NxU32 *)read(stream, sizeof(NxU32));
 }
 
-static inline NxU32 read_NxU64(NxMemoryStream *stream)
+static inline NxU64 read_NxU64(NxMemoryStream *stream)
 {
-    return *(NxU32 *)read(stream, sizeof(NxU32));
+    return *(NxU64 *)read(stream, sizeof(NxU64));
 }
 
 void read_name(NxMemoryStream *stream, NxChar name[Nx_EMITTER_NAME_LEN])
 {
-    name = read(stream, Nx_EMITTER_NAME_LEN); 
+    memcpy(name, read(stream, Nx_EMITTER_NAME_LEN), Nx_EMITTER_NAME_LEN);
 }
 
 void read_enabled(NxMemoryStream *stream, NxBool *enabled)

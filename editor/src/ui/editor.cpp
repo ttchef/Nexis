@@ -83,6 +83,7 @@ static AppState setup_menu(AppContext &ctx)
             if (ImGui::MenuItem("Home"))
             {
                 utils::load_projects(ctx.projects);
+                ctx.project->destroy();
                 state        = AppState::ProjectExplorer;
                 *ctx.project = Project();
             }
@@ -254,6 +255,12 @@ static void setup_emitters(AppContext &ctx, NxEmitter &add_emitter, ui::Selected
 static void setup_module(AppContext &ctx, ui::SelectedModule &module)
 {
     ImGui::Begin("Module");
+
+    if (module.emitter_index >= Nx_system_emitter_count(&ctx.project->system))
+    {
+        ImGui::End();
+        return;
+    }
 
     auto &e = ctx.project->system.emitters[module.emitter_index];
     if (module.settings)
@@ -459,6 +466,10 @@ AppState Editor::draw(AppContext &ctx)
 
     setup_editor_dockspace();
     state = setup_menu(ctx);
+    if (state != AppState::Editor)
+    {
+        return state;
+    }
     setup_emitters(ctx, this->add_emitter, this->module);
     setup_module(ctx, this->module);
     setup_viewport(this->scene, this->scene_texture_active);

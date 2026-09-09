@@ -186,16 +186,17 @@ void Nx_system_add_emitter(NxSystem *system, NxEmitter *emitter)
         return;
     }
 
-    NxEmitterOnSpawnData on_spawn = {
-        .emitter = emitter,
-    };
-
     Nx_darray_push((void **)&system->emitters, emitter);
 
     // NOTE: Emitter resources will be managed from the system now
 #define X(type, name) emitter->runtime.particles.name = NULL;
     Nx_PARTICLE_FIELDS(X)
 #undef X
+    for (NxU32 i = 0; i < NxModuleQueue_Count; i++)
+    {
+        emitter->config.modules.queues[i].data = NULL;
+        emitter->config.modules.queues[i].used = 0;
+    }
 }
 
 void Nx_system_update_emitters(NxSystem *system, NxF32 delta_time)
