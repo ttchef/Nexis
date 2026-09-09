@@ -2,6 +2,7 @@
 #include <project.hpp>
 
 #include <fstream>
+#include <iostream>
 
 #include <Nexis/core.h>
 
@@ -32,9 +33,21 @@ void Project::load(ProjectHeader header)
 
 void Project::store()
 {
-	std::ofstream file(header.file_path);
-	if (file.is_open())
+	std::ofstream file(header.file_path, std::ios::binary);
+	if (!file)
 	{
-		file << "Was good\n";
-	}	
+		std::cout << "Failed to open: " << header.file_path << std::endl;
+	}
+
+	NxBuffer system_data;
+	Nx_system_store(&this->system, &system_data);
+
+	std::cout << system_data.size << std::endl;
+
+	file.write(static_cast<char *>(system_data.data), static_cast<std::streamsize>(system_data.size));
+
+	if (!file)
+	{
+		std::cout << "Failed to write" << std::endl;
+	}
 }

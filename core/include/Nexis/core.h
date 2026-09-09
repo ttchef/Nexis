@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <Nexis/particle.h>
+#include <Nexis/serializer.h>
 
 #ifdef __cplusplus
 }

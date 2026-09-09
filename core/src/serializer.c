@@ -1,6 +1,7 @@
 
 #include <Nexis/serializer.h>
 #include <darray.h>
+#include <alloc.h>
 
 typedef struct
 {
@@ -14,6 +15,7 @@ static inline void write(NxWriter *writer, void *data, NxUsize size)
     // NOTE: I actually dont know if it should be <= idk future me solve this
     assert(writer->at + size < writer->size);
     memcpy(&writer->data[writer->at], data, size);
+    writer->at += size;
 }
 
 static inline void write_NxF32(NxWriter *writer, NxF32 v)
@@ -57,19 +59,30 @@ void write_enabled(NxWriter *writer, NxBool enabled)
     write(writer, &enabled, sizeof(enabled));
 }
 
+void write_modules(NxWriter *writer, NxModules *modules)
+{
+    for (NxU32 i = 0; i < NxModuleQueue_Count; i++)
+    {
+        NxModuleQueue *q = &modules->queues[i];
+        
+        write_NxU32(writer, q->used);
+        write(writer, q->data, q->used);
+    }
+}
+
 NxBool Nx_system_store(const NxSystem *system, NxBuffer *out)
 {
-    if (system || !system->emitters || !out)
+    if (!system || !system->emitters || !out)
     {
         return false;
     }
 
-    NxBuffer result = {0};
+    const NxU64 size = Nx_GB(10ull);
 
     NxWriter writer = {
           .at = 0,
-          .data = result.data,
-          .size = result.size,
+          .data = Nx_virtual_alloc(size),
+          .size = size,
     };
 
     NxU32 emitter_count = Nx_darray_len(system->emitters);
@@ -81,9 +94,14 @@ NxBool Nx_system_store(const NxSystem *system, NxBuffer *out)
 
         write_particles(&writer, &e->particles);
         write_name(&writer, e->name);
+        write_enabled(&writer, e->enabled);
+        write_modules(&writer, &e->modules);
     }
 
-    *out = result;
+    *out = (NxBuffer){
+        .data = writer.data,
+        .size = writer.at, 
+    };
 
     return true;
 }
