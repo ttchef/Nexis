@@ -10,6 +10,8 @@ typedef struct
     NxUsize at;
 } NxMemoryStream;
 
+#define Nx_MAX_FILE_SIZE (Nx_GB(10ull))
+
 // NOTE: Write functions
 
 static inline void write(NxMemoryStream *stream, void *data, NxUsize size)
@@ -119,12 +121,10 @@ NxBool Nx_system_store(const NxSystem *system, NxBuffer *out)
         return false;
     }
 
-    const NxU64 size = Nx_GB(10ull);
-
     NxMemoryStream stream = {
           .at = 0,
-          .data = Nx_virtual_alloc(size),
-          .size = size,
+          .data = Nx_virtual_alloc(Nx_MAX_FILE_SIZE),
+          .size = Nx_MAX_FILE_SIZE,
     };
 
     NxU32 emitter_count = Nx_darray_len(system->emitters);
@@ -167,5 +167,15 @@ void Nx_system_load(NxSystem *system, NxBuffer *buffer)
         read_modules(&stream, &e.config.modules);
 
         Nx_system_add_emitter(system, &e);
+    }
+}
+
+void Nx_buffer_free(NxBuffer *buffer)
+{
+    if (buffer && buffer->data)
+    {
+        Nx_virtual_free(buffer->data, Nx_MAX_FILE_SIZE);
+        buffer->data = 0;
+        buffer->size = 0;
     }
 }

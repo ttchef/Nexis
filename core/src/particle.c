@@ -165,9 +165,14 @@ void Nx_system_create(NxSystem *out)
 
 void Nx_system_destroy(NxSystem *system)
 {
-    if (!system)
+    if (!system || !system->emitters)
     {
         return;
+    }
+
+    for (NxU32 i = 0; i < Nx_darray_len(system->emitters); i++)
+    {
+        Nx_emitter_destroy(&system->emitters[i]);
     }
 
     Nx_darray_destroy(system->emitters);
