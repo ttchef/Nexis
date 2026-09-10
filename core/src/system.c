@@ -1,5 +1,5 @@
 
-#include <Nexis/particle.h>
+#include <Nexis/system.h>
 #include <darray.h>
 #include <module_behaviour.h>
 
@@ -49,7 +49,8 @@ static void on_event(NxModuleType type, void *module_data, void *userdata)
     case NxModuleType_##name:                              \
     {                                                      \
         Nx_module_behaviour_##name(userdata, module_data); \
-    } break;
+    }                                                      \
+    break;
         Nx_MODULES(Nx_MODULE, Nx_FIELD)
 #undef Nx_MODULE
 #undef Nx_FIELD
@@ -108,11 +109,10 @@ void Nx_emitter_update_particles(NxEmitter *emitter, NxF32 delta_time)
 
     NxEmitterOnUpdateData data = {
         .emitter    = emitter,
-        .delta_time = delta_time
-    };
+        .delta_time = delta_time};
     NxCallbackData callback_data = {
-          .queue = NxModuleQueue_EmitterUpdate,
-          .data = &data,  
+        .queue = NxModuleQueue_EmitterUpdate,
+        .data  = &data,
     };
     Nx_modules_for_each(&emitter->config.modules, NxModuleQueue_EmitterUpdate, on_event, &callback_data);
 
@@ -122,7 +122,7 @@ void Nx_emitter_update_particles(NxEmitter *emitter, NxF32 delta_time)
 #define X(type, name) .name = &particles->name[i],
             Nx_PARTICLE_FIELDS(X)
 #undef X
-            .delta_time = delta_time,
+                .delta_time = delta_time,
         };
 
         NxCallbackData callback_data = {
@@ -197,7 +197,7 @@ void Nx_system_add_emitter(NxSystem *system, NxEmitter *emitter)
 #define X(type, name) emitter->runtime.particles.name = NULL;
     Nx_PARTICLE_FIELDS(X)
 #undef X
-    for (NxU32 i = 0; i < NxModuleQueue_Count; i++)
+        for (NxU32 i = 0; i < NxModuleQueue_Count; i++)
     {
         emitter->config.modules.queues[i].data = NULL;
         emitter->config.modules.queues[i].used = 0;

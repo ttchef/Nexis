@@ -1,5 +1,4 @@
 
-#include <Nexis/particle.h>
 #include <module_behaviour.h>
 
 void Nx_module_behaviour_SpawnRate(NxCallbackData *callback_data, NxModuleSpawnRate *module)
@@ -25,7 +24,7 @@ void Nx_module_behaviour_SpawnBurst(NxCallbackData *callback_data, NxModuleSpawn
 {
     NxEmitterOnUpdateData *data = Nx_CALLBACK_DATA(SpawnBurst, callback_data);
 
-    if (module->trigger_count > 1)
+    if (module->trigger_count >= 1)
     {
         --module->trigger_count;
         for (NxU32 i = 0; i < module->particle_count; i++)

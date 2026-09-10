@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <Nexis/particle.h>
+#include <Nexis/system.h>
 
 //
 // NOTE: This file is for serializing the NxSystem struct.

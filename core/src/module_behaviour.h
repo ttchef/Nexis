@@ -3,7 +3,7 @@
 
 #include <Nexis/module.h>
 #include <Nexis/types.h>
-#include <Nexis/particle.h>
+#include <Nexis/system.h>
 
 #include <assert.h>
 

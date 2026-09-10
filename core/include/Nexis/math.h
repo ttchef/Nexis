@@ -5,6 +5,7 @@
 
 #include <float.h>
 #include <math.h>
+#include <stdlib.h>
 
 static inline NxF32 Nx_lerp(NxF32 a, NxF32 b, NxF32 t)
 {
@@ -57,6 +58,12 @@ static inline NxVec3 Nx_vec3_norm(NxVec3 v)
         return Nx_vec3(0.0f, 0.0f, 0.0f);
     }
     return Nx_vec3_scale(v, 1.0f / len);
+}
+
+static inline NxVec3 Nx_vec3_rand_unit(void)
+{
+    // TODO: Change random number generator
+    return Nx_vec3_norm(Nx_vec3(rand(), rand(), rand()));
 }
 
 typedef struct
