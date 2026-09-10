@@ -49,44 +49,45 @@ typedef enum
 // NOTE: To add a module just add a new MODULE() declaration here
 // and define the corresponding behavour function in module_behaviour.c
 // The funtion decleration will be automatically generated in module_behaviour.h.
-#define Nx_MODULES(MODULE, FIELD)                    \
-    MODULE(                                          \
-        SpawnRate,                                   \
-        "Spawn Rate",                                \
-        NxModuleQueue_EmitterUpdate,                 \
-        FIELD(NxF32, emit_speed, 2.0f)               \
-            FIELD(NxF32, elapsed_time, 0.0f))        \
-    MODULE(                                          \
-        SpawnBurst,                                  \
-        "Spawn Burst",                               \
-        NxModuleQueue_EmitterUpdate,                 \
-        FIELD(NxU32, particle_count, 1)              \
-            FIELD(NxU32, trigger_count, 1))          \
-    MODULE(                                          \
-        AddVelocity,                                 \
-        "Add Velocity",                              \
-        NxModuleQueue_ParticleSpawn,                 \
-        FIELD(NxVec3, direction, {0.0f, 0.0f, 0.0f}) \
-            FIELD(NxF32, speed,                      \
-                  1.0f))                             \
-    MODULE(                                          \
-        GravityForce,                                \
-        "Gravity Force",                             \
-        NxModuleQueue_ParticleUpdate,                \
-        FIELD(NxVec3, direction, {0.0f, 0.0f, 0.0f}) \
-            FIELD(NxF32, strength, 1.0f))            \
-    MODULE(                                          \
-        SolveVelocityAndForces,                      \
-        "Solve Velocity And Forces",                 \
-        NxModuleQueue_ParticleUpdate, )              \
-    MODULE(                                          \
-        InitParticle,                                \
-        "Init Particle",                             \
-        NxModuleQueue_ParticleSpawn,                 \
-        FIELD(NxF32, lifetime, 1.0f))                \
-    MODULE(                                          \
-        SolveLifetime,                               \
-        "Solve Lifetime",                            \
+#define Nx_MODULES(MODULE, FIELD)                           \
+    MODULE(                                                 \
+        SpawnRate,                                          \
+        "Spawn Rate",                                       \
+        NxModuleQueue_EmitterUpdate,                        \
+        FIELD(NxF32, emit_speed, 2.0f)                      \
+            FIELD(NxF32, elapsed_time, 0.0f))               \
+    MODULE(                                                 \
+        SpawnBurst,                                         \
+        "Spawn Burst",                                      \
+        NxModuleQueue_EmitterUpdate,                        \
+        FIELD(NxU32, particle_count, 1)                     \
+            FIELD(NxU32, trigger_count, 1))                 \
+    MODULE(                                                 \
+        AddVelocity,                                        \
+        "Add Velocity",                                     \
+        NxModuleQueue_ParticleSpawn,                        \
+        FIELD(NxVec3, direction, {0.0f, 0.0f, 0.0f})        \
+            FIELD(NxF32, speed,                             \
+                  1.0f))                                    \
+    MODULE(                                                 \
+        GravityForce,                                       \
+        "Gravity Force",                                    \
+        NxModuleQueue_ParticleUpdate,                       \
+        FIELD(NxVec3, direction, {0.0f, 0.0f, 0.0f})        \
+            FIELD(NxF32, strength, 1.0f))                   \
+    MODULE(                                                 \
+        SolveVelocityAndForces,                             \
+        "Solve Velocity And Forces",                        \
+        NxModuleQueue_ParticleUpdate, )                     \
+    MODULE(                                                 \
+        InitParticle,                                       \
+        "Init Particle",                                    \
+        NxModuleQueue_ParticleSpawn,                        \
+        FIELD(NxF32, lifetime, 1.0f)                        \
+            FIELD(NxVec4, color, {1.0f, 1.0f, 1.0f, 1.0f})) \
+    MODULE(                                                 \
+        SolveLifetime,                                      \
+        "Solve Lifetime",                                   \
         NxModuleQueue_ParticleUpdate, )
 
 static const char *Nx_MODULE_NAME_LOOKUP[] = {

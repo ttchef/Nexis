@@ -8,7 +8,7 @@
 // NOTE: Forward declaration
 typedef struct NxRenderer NxRenderer;
 
-typedef NxU64         NxTextureHandle;
+typedef NxU64                NxTextureHandle;
 static const NxTextureHandle Nx_INVALID_TEXTURE_HANDLE = ~(0ull);
 
 // NOTE: This makes up the fields of a particle and all the dynamic arrays for the SoA
@@ -17,7 +17,8 @@ static const NxTextureHandle Nx_INVALID_TEXTURE_HANDLE = ~(0ull);
     X(NxVec3, velocity)       \
     X(NxVec3, acceleration)   \
     X(NxVec3, scale)          \
-    X(NxF32, lifetime)
+    X(NxF32, lifetime)        \
+    X(NxVec4, color)
 
 // NOTE: Only used as parameter for 'Nx_emitter_add_particle'
 struct NxParticle

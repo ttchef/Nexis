@@ -67,6 +67,7 @@ void Nx_module_behaviour_InitParticle(NxCallbackData *callback_data, NxModuleIni
     NxParticleOnSpawnData *data = Nx_CALLBACK_DATA(InitParticle, callback_data);
 
     data->particle->lifetime = module->lifetime;
+    data->particle->color = module->color;
 }
 
 void Nx_module_behaviour_SolveLifetime(NxCallbackData *callback_data, NxModuleSolveLifetime *module)

@@ -332,7 +332,7 @@ static void setup_module(AppContext &ctx, ui::SelectedModule &module)
                                 {
                                     NxModuleInitParticle *init_particle = static_cast<NxModuleInitParticle *>(module_data);
                                     ImGui::DragFloat("Lifetime", &init_particle->lifetime, 0.05f);
-                                } break;
+                                    ImGui::ColorPicker4("Color", &init_particle->color.x);                                } break;
                                 default: break;
                                 }
                             }
