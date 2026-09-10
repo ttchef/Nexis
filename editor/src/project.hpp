@@ -12,7 +12,7 @@ struct ProjectHeader
     std::filesystem::path file_path;
     // Without extension
     std::string file_name;
-    i64         mod_time;
+    std::filesystem::file_time_type mod_time;
 };
 
 struct Project

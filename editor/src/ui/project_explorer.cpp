@@ -3,27 +3,15 @@
 #include <utils.hpp>
 #include <project.hpp>
 
-#include <ctime>
 #include <filesystem>
 #include <ranges>
+#include <chrono>
 
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <misc/cpp/imgui_stdlib.h>
 
 #include <raylib.h>
-
-// Not thread save right now ik but right now it doestn matter
-static const char *format_time(i64 time)
-{
-    static char buffer[32];
-
-    std::time_t mod_time = static_cast<std::time_t>(time);
-    std::tm    *tm_info  = std::localtime(&mod_time);
-    std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M", tm_info);
-
-    return buffer;
-}
 
 static void setup_explorer_dockspace()
 {
@@ -167,8 +155,8 @@ AppState ProjectExplorer::draw(AppContext &ctx)
                 project_to_remove = i;
             }
 
-            std::string last_modified =
-                std::string("Last modified: ") + format_time(project.mod_time);
+            auto system_time = std::chrono::clock_cast<std::chrono::system_clock>(project.mod_time);
+            std::string last_modified = std::format("Last modified: {:%Y-%m-%d %H:%M}", system_time);
             ImGui::TextDisabled("%s", last_modified.c_str());
 
             ImGui::PopFont();

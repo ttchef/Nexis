@@ -156,7 +156,6 @@ void Nx_system_load(NxSystem *system, NxBuffer *buffer)
     };
     
     NxU32 emitter_count = read_NxU32(&stream);
-    printf("Emitter count: %u\n", emitter_count);
 
     for (NxU32 i = 0; i < emitter_count; i++)
     {

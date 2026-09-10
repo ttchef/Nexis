@@ -66,8 +66,6 @@ void Project::store()
 	NxBuffer system_data;
 	Nx_system_store(&this->system, &system_data);
 
-	std::cout << system_data.size << std::endl;
-
 	file.write(static_cast<char *>(system_data.data), static_cast<std::streamsize>(system_data.size));
 
 	if (!file)

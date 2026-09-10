@@ -13,6 +13,7 @@ struct ProjectHeader;
 
 namespace utils
 {
+// NOTE: Helper function for c api style functions
 static inline std::string path_abs(const char *path)
 {
     const char *base_path = GetApplicationDirectory();
