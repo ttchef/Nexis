@@ -1,5 +1,6 @@
 
 #include <module_behaviour.h>
+#include <darray.h>
 
 void Nx_module_behaviour_SpawnRate(NxCallbackData *callback_data, NxModuleSpawnRate *module)
 {
@@ -59,4 +60,31 @@ void Nx_module_behaviour_SolveVelocityAndForces(NxCallbackData *callback_data, N
     *data->velocity     = Nx_vec3_add(*data->velocity, Nx_vec3_scale(*data->acceleration, data->delta_time));
     *data->position     = Nx_vec3_add(*data->position, Nx_vec3_scale(*data->velocity, data->delta_time));
     *data->acceleration = Nx_vec3(0.0f, 0.0f, 0.0f);
+}
+
+void Nx_module_behaviour_InitParticle(NxCallbackData *callback_data, NxModuleInitParticle *module)
+{
+    NxParticleOnSpawnData *data = Nx_CALLBACK_DATA(InitParticle, callback_data);
+
+    data->particle->lifetime = module->lifetime;
+}
+
+void Nx_module_behaviour_SolveLifetime(NxCallbackData *callback_data, NxModuleSolveLifetime *module)
+{
+    NxParticleOnUpdateData *data = Nx_CALLBACK_DATA(SolveLifetime, callback_data);
+
+    if (*data->lifetime <= 0.0f)
+    {
+        NxU32 last = Nx_darray_len(data->particles->position) - 1;
+        
+#define X(type, name)\
+*data->name = data->particles->name[last];\
+Nx_darray_len_set(data->particles->name, last);
+
+Nx_PARTICLE_FIELDS(X)
+#undef X
+
+    }
+
+    *data->lifetime -= data->delta_time;
 }

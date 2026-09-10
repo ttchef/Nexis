@@ -119,6 +119,7 @@ void Nx_emitter_update_particles(NxEmitter *emitter, NxF32 delta_time)
     for (NxU32 i = 0; i < Nx_darray_len(particles->position); i++)
     {
         NxParticleOnUpdateData data = {
+                .particles = &emitter->runtime.particles,
 #define X(type, name) .name = &particles->name[i],
             Nx_PARTICLE_FIELDS(X)
 #undef X

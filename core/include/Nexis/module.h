@@ -78,6 +78,15 @@ typedef enum
     MODULE(                                          \
         SolveVelocityAndForces,                      \
         "Solve Velocity And Forces",                 \
+        NxModuleQueue_ParticleUpdate, )              \
+    MODULE(                                          \
+        InitParticle,                                \
+        "Init Particle",                             \
+        NxModuleQueue_ParticleSpawn,                 \
+        FIELD(NxF32, lifetime, 1.0f))                \
+    MODULE(                                          \
+        SolveLifetime,                               \
+        "Solve Lifetime",                            \
         NxModuleQueue_ParticleUpdate, )
 
 static const char *Nx_MODULE_NAME_LOOKUP[] = {
@@ -113,7 +122,7 @@ Nx_MODULES(Nx_MODULE, Nx_FIELD)
 #undef Nx_MODULE
 #undef Nx_FIELD
 
-typedef struct
+    typedef struct
 {
     NxU8   *data;
     NxUsize used;

@@ -11,12 +11,12 @@ uniform vec3 camera_pos;
 
 float max2(vec2 v)
 {
-    return max(v.x, v.y);        
+    return max(v.x, v.y);
 }
 
 vec2 satv(vec2 v)
 {
-    return vec2(clamp(v.x, 0.0, 1.0), clamp(v.y, 0.0, 1.0));        
+    return vec2(clamp(v.x, 0.0, 1.0), clamp(v.y, 0.0, 1.0));
 }
 
 float satf(float x)
@@ -35,7 +35,7 @@ void main()
     const float grid_size = 0.5;
     const vec4 thick_lines = vec4(0.0, 1.0, 1.0, 1.0);
     const vec4 thin_lines = vec4(0.0, 0.3, 0.3, 1.0);
-    
+
     vec2 dvx = vec2(dFdx(fragPosition.x), dFdy(fragPosition.x));
     vec2 dvy = vec2(dFdx(fragPosition.z), dFdy(fragPosition.z));
 
@@ -53,13 +53,13 @@ void main()
     // More lines
     dudv *= 4.0;
 
-    vec2 mod_div_dudv =  mod(fragPosition.xz, cell_size_lod0) / dudv;
+    vec2 mod_div_dudv = mod(fragPosition.xz, cell_size_lod0) / dudv;
     float lod0a = max2(vec2(1.0) - abs(satv(mod_div_dudv) * 2.0 - vec2(1.0)));
-    
-    mod_div_dudv =  mod(fragPosition.xz, cell_size_lod1) / dudv;
+
+    mod_div_dudv = mod(fragPosition.xz, cell_size_lod1) / dudv;
     float lod1a = max2(vec2(1.0) - abs(satv(mod_div_dudv) * 2.0 - vec2(1.0)));
-    
-    mod_div_dudv =  mod(fragPosition.xz, cell_size_lod2) / dudv;
+
+    mod_div_dudv = mod(fragPosition.xz, cell_size_lod2) / dudv;
     float lod2a = max2(vec2(1.0) - abs(satv(mod_div_dudv) * 2.0 - vec2(1.0)));
 
     float LOD_fade = fract(LOD);
@@ -83,7 +83,9 @@ void main()
 
     float falloff = (1.0 - satf(0.0006 * length(fragPosition.xz - camera_pos.xz) / grid_size));
     color.a *= falloff;
-        
+
+    discard;
+
     finalColor = color;
-    finalColor.rgb = pow(finalColor.rgb, vec3(1.0/2.2));
+    finalColor.rgb = pow(finalColor.rgb, vec3(1.0 / 2.2));
 }

@@ -8,14 +8,16 @@
 // NOTE: Forward declaration
 typedef struct NxRenderer NxRenderer;
 
-typedef NxU64 NxTextureHandle;
+typedef NxU64         NxTextureHandle;
+static const NxTextureHandle Nx_INVALID_TEXTURE_HANDLE = ~(0ull);
 
 // NOTE: This makes up the fields of a particle and all the dynamic arrays for the SoA
 #define Nx_PARTICLE_FIELDS(X) \
     X(NxVec3, position)       \
     X(NxVec3, velocity)       \
     X(NxVec3, acceleration)   \
-    X(NxVec3, scale)
+    X(NxVec3, scale)          \
+    X(NxF32, lifetime)
 
 // NOTE: Only used as parameter for 'Nx_emitter_add_particle'
 struct NxParticle
@@ -46,10 +48,10 @@ typedef enum
 // when the emitter gets exported this is the only data that gets saved
 typedef struct
 {
-    NxChar      name[Nx_EMITTER_NAME_LEN];
-    NxBool      enabled;
-    NxBlending  blending;
-    NxModules   modules;
+    NxChar     name[Nx_EMITTER_NAME_LEN];
+    NxBool     enabled;
+    NxBlending blending;
+    NxModules  modules;
 } NxEmitterConfig;
 
 // NOTE: Runtime data which is just default constructed and changed
@@ -57,7 +59,7 @@ typedef struct
 typedef struct
 {
     NxParticles particles;
-    NxF32 elapsed_time;
+    NxF32       elapsed_time;
 } NxEmitterRuntime;
 
 struct NxEmitter

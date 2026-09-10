@@ -36,6 +36,7 @@ typedef struct
 
 typedef struct
 {
+    NxParticles *particles;
 #define X(type, name) type *name;
     Nx_PARTICLE_FIELDS(X)
 #undef X

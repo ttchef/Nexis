@@ -328,7 +328,12 @@ static void setup_module(AppContext &ctx, ui::SelectedModule &module)
                                     ImGui::DragFloat("Strength", &gravity_force->strength, 0.05f);
                                     gravity_force->strength = std::max(gravity_force->strength, 0.0f);
                                 } break;
-                                default: break; 
+                                case NxModuleType_InitParticle:
+                                {
+                                    NxModuleInitParticle *init_particle = static_cast<NxModuleInitParticle *>(module_data);
+                                    ImGui::DragFloat("Lifetime", &init_particle->lifetime, 0.05f);
+                                } break;
+                                default: break;
                                 }
                             }
                             ++ctx->index; }, &function_ctx);
