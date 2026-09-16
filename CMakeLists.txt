@@ -12,6 +12,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(FetchContent)
 set(FETCHCONTENT_QUIET OFF)
 
+enable_testing()
+
 add_subdirectory(core)
 
 if (NEXIS_BUILD_EDITOR)

@@ -1,5 +1,6 @@
 build/
-# Used for a faster building process while developing (wrapping cmake commands)
-Makefile
 compile_commands.json
 imgui.ini
+
+# Used for a faster building process while developing (wrapping cmake commands)
+Makefile
