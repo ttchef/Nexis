@@ -13,7 +13,9 @@
     Nx_ITEM(NxParse_InvalidParameters)     \
     Nx_ITEM(NxParse_BufferOverflow)    \
     Nx_ITEM(NxParse_UnexpectedEOF) \
-    Nx_ITEM(NxParse_CorruptData)
+    Nx_ITEM(NxParse_CorruptData)\
+    Nx_ITEM(NxParse_InvalidSignature)\
+    Nx_ITEM(NxParse_InvalidVersion)
 
 typedef enum
 {

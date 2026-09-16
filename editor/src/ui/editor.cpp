@@ -266,7 +266,18 @@ static void setup_module(AppContext &ctx, ui::SelectedModule &module)
     if (module.settings)
     {
         ImGui::TextUnformatted("Settings");
-        ImGui::Checkbox("Test", &e.config.enabled);
+        if (ImGui::BeginCombo("Test", e.config.blending == NxBlendingOpaque ? "Opaque" : "Additive"))
+        {
+            if (ImGui::Selectable("Opaque"))
+            {
+                e.config.blending = NxBlendingOpaque;
+            }
+            if (ImGui::Selectable("Additive"))
+            {
+                e.config.blending = NxBlendingAdditive;
+            }
+            ImGui::EndCombo();
+        }
     }
     else if (module.module_index == ui::MODULE_INDEX_NONE)
     {

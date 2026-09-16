@@ -13,6 +13,29 @@ typedef struct
 
 #define Nx_MAX_FILE_SIZE (Nx_GB(10ull))
 
+typedef struct
+{
+    NxU32 patch : 12;
+    NxU32 minor : 12;
+    NxU32 major : 8;
+} NxFileVersion;
+
+#define Nx_FOURCC_LE(a, b, c, d)                      ((NxU32)(a) | ((NxU32)(b) << 8) | ((NxU32)(c) << 16) | ((NxU32)(d) << 24))
+#define Nx_MAKE_VERSION(major_in, minor_in, patch_in) ((NxFileVersion){ \
+    .patch = patch_in,                                                  \
+    .minor = minor_in,                                                  \
+    .major = major_in,                                                  \
+})
+
+const NxU32         SIGNATURE              = Nx_FOURCC_LE('n', 'x', 'p', ' ');
+const NxFileVersion MIN_COMPATIBLE_VERSION = Nx_MAKE_VERSION(0, 1, 0);
+
+typedef union
+{
+    NxU32         u32;
+    NxFileVersion file_version;
+} NxConversionUnion;
+
 // NOTE: Write functions
 
 static inline void write(NxMemoryStream *stream, void *data, NxUsize size)
@@ -134,7 +157,7 @@ void read_modules(NxMemoryStream *stream, NxModules *modules)
     {
         NxModuleQueue *q = &modules->queues[i];
 
-        NxU64 used    = read_NxU64(stream);
+        NxU64 used = read_NxU64(stream);
         if (used > Nx_QUEUE_SIZE)
         {
             stream->result = NxParse_CorruptData;
@@ -161,11 +184,14 @@ NxParseResult Nx_system_store(const NxSystem *system, NxBuffer *out)
     }
 
     NxMemoryStream stream = {
-        .at   = 0,
-        .data = Nx_virtual_alloc(Nx_MAX_FILE_SIZE),
-        .size = Nx_MAX_FILE_SIZE,
+        .at     = 0,
+        .data   = Nx_virtual_alloc(Nx_MAX_FILE_SIZE),
+        .size   = Nx_MAX_FILE_SIZE,
         .result = NxParse_Success,
     };
+
+    write_NxU32(&stream, SIGNATURE);
+    write(&stream, (void *)&MIN_COMPATIBLE_VERSION, sizeof(MIN_COMPATIBLE_VERSION));
 
     NxU32 emitter_count = Nx_darray_len(system->emitters);
     write_NxU32(&stream, emitter_count);
@@ -201,11 +227,25 @@ NxParseResult Nx_system_load(NxSystem *system, const void *data, NxUsize size)
     }
 
     NxMemoryStream stream = {
-        .at   = size,
-        .size = size,
-        .data = (void *)data,
+        .at     = size,
+        .size   = size,
+        .data   = (void *)data,
         .result = NxParse_Success,
     };
+
+    if (read_NxU32(&stream) != SIGNATURE)
+    {
+        return NxParse_InvalidSignature;
+    }
+
+    NxConversionUnion version = (NxConversionUnion){
+        .u32 = read_NxU32(&stream),
+    };
+
+    if (version.file_version.major < MIN_COMPATIBLE_VERSION.major)
+    {
+        return NxParse_InvalidVersion;
+    }
 
     NxU32 emitter_count = read_NxU32(&stream);
 
