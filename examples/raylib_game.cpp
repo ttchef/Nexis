@@ -10,7 +10,7 @@
 // Helpers
 static inline const char *path_abs(const char *path)
 {
-    static char buffer[2046];
+    static char buffer[2048];
     const char *base_path = GetApplicationDirectory();
     snprintf(buffer, sizeof(buffer), "%s%s", base_path, path);
     return buffer;

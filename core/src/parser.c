@@ -163,7 +163,7 @@ void read_modules(NxMemoryStream *stream, NxModules *modules)
             stream->result = NxParse_CorruptData;
             return;
         }
-        void *data = read(stream, q->used);
+        void *data = read(stream, used);
         if (!data)
         {
             return;
