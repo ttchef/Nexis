@@ -74,8 +74,7 @@ void App::draw()
     {
         BeginTextureMode(this->ui.editor.scene);
         ClearBackground(BLACK);
-        DrawCircle(0, 0, 150, RED);
-
+        
         BeginMode3D(this->camera.raylib);
 
         BeginShaderMode(this->grid_shader.handle);

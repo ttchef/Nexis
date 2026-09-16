@@ -84,7 +84,10 @@ void main()
     float falloff = (1.0 - satf(0.0006 * length(fragPosition.xz - camera_pos.xz) / grid_size));
     color.a *= falloff;
 
-    discard;
+    if (color.a < 0.1)
+    {
+            discard;
+    }
 
     finalColor = color;
     finalColor.rgb = pow(finalColor.rgb, vec3(1.0 / 2.2));

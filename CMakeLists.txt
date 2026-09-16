@@ -20,5 +20,5 @@ if (NEXIS_BUILD_EDITOR)
 endif()
 
 if (NEXIS_BUILD_EXAMPLES)
-    add_subdirectory(examples/raylib-game)
+    add_subdirectory(examples)
 endif()
