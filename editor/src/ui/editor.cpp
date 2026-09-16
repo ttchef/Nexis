@@ -216,7 +216,8 @@ static void setup_emitters(AppContext &ctx, NxEmitter &add_emitter, ui::Selected
                     {
                         u32                 emitter_index;
                         NxModuleQueueIndex  queue_index;
-                        i32                 index = 0;
+                        i32                 index        = 0;
+                        i32                 remove_index = -1;
                         ui::SelectedModule *module;
                     } function_ctx = {
                         .emitter_index = i,
@@ -233,8 +234,24 @@ static void setup_emitters(AppContext &ctx, NxEmitter &add_emitter, ui::Selected
                                             {
                                                 *ctx->module = {ctx->emitter_index, ctx->queue_index, ctx->index, false};
                                             }
+                                            ImGui::SameLine();
+                                            if (ImGui::Button("Delete"))
+                                            {
+                                                ctx->remove_index = ctx->index;
+                                            }
                                             ImGui::PopID();
                                             ++ctx->index; }, &function_ctx);
+                    if (function_ctx.remove_index != -1)
+                    {
+                        Nx_modules_remove(&ctx.project->system.emitters[i].config.modules, static_cast<NxModuleQueueIndex>(j), [](u32 index, NxModuleType type, void *userdata)
+                                          {
+                                                u32 remove_index = *(u32 *)userdata;
+                                                if (remove_index == index)
+                                                {
+                                                    return NxRemove;
+                                                }
+                                                return NxStay; }, &function_ctx.remove_index);
+                    }
                 }
                 setup_add_module_menu(ctx, e, j);
 
@@ -266,15 +283,15 @@ static void setup_module(AppContext &ctx, ui::SelectedModule &module)
     if (module.settings)
     {
         ImGui::TextUnformatted("Settings");
-        if (ImGui::BeginCombo("Test", e.config.blending == NxBlendingOpaque ? "Opaque" : "Additive"))
+        if (ImGui::BeginCombo("Test", e.config.blending == NxBlending_Opaque ? "Opaque" : "Additive"))
         {
             if (ImGui::Selectable("Opaque"))
             {
-                e.config.blending = NxBlendingOpaque;
+                e.config.blending = NxBlending_Opaque;
             }
             if (ImGui::Selectable("Additive"))
             {
-                e.config.blending = NxBlendingAdditive;
+                e.config.blending = NxBlending_Additive;
             }
             ImGui::EndCombo();
         }

@@ -5,7 +5,7 @@
 
 void Nx_backend_raylib_render(NxParticleBatch batch)
 {
-    if (batch.blending == NxBlendingAdditive)
+    if (batch.blending == NxBlending_Additive)
     {
         BeginBlendMode(BLEND_ADDITIVE);
     }
@@ -18,7 +18,7 @@ void Nx_backend_raylib_render(NxParticleBatch batch)
         DrawSphere((Vector3){pos.x, pos.y, pos.z}, particles->scale[i].x, (Color){(NxU8)(color.x * 255.0f), (NxU8)(color.y * 255.0f), (NxU8)(color.z * 255.0f), (NxU8)(color.w * 255.0f)});
     }
 
-    if (batch.blending == NxBlendingAdditive)
+    if (batch.blending == NxBlending_Additive)
     {
         EndBlendMode();
     }

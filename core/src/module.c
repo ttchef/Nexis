@@ -94,7 +94,7 @@ void Nx_modules_for_each(NxModules *modules, NxModuleQueueIndex queue, Nx_for_ea
         NxModuleHeader *header = (NxModuleHeader *)at;
         if (header->size == 0)
         {
-            fprintf(stderr, "[NEXIS] Encouterd module header size == 0 will break out of loop\n");
+            fprintf(stderr, "[NEXIS] Encounterd module header size == 0 on for each. Will break out of loop\n");
             break;
         }
 
@@ -103,6 +103,51 @@ void Nx_modules_for_each(NxModules *modules, NxModuleQueueIndex queue, Nx_for_ea
         func(header->type, data, userdata);
 
         at += header->size;
+    }
+}
+
+void Nx_modules_remove(NxModules *modules, NxModuleQueueIndex queue, Nx_remove_module_func func, void *userdata)
+{
+    if (!modules || !func)
+    {
+        return;
+    }
+
+    NxModuleQueue *q  = &modules->queues[queue];
+    NxU8          *at = q->data;
+    NxU32 index = 0;
+
+    while (at < q->data + q->used)
+    {
+        NxModuleHeader *header = (NxModuleHeader *)at;
+        if (header->size == 0)
+        {
+            fprintf(stderr, "[NEXIS] Encounterd module header size == 0 on remove. Will break out of loop\n");
+            break;
+        }
+
+        if (func(index, header->type, userdata) == NxRemove)
+        {
+            NxU8 *module_end = at + header->size;
+
+            // NOTE: Is it the last module?
+            if (module_end == q->data + q->used)
+            {
+                fprintf(stderr, "[NEXIS] Test print this is the last module\n");
+                if (q->used < header->size)
+                {
+                    break;
+                }
+                q->used -= header->size;
+            }
+            else
+            {
+                memcpy(header, module_end, (q->data + q->used) - module_end); 
+            }
+        }
+
+        at += header->size;
+        ++index;
     }
 }
 

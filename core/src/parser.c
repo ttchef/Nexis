@@ -84,7 +84,12 @@ void write_name(NxMemoryStream *stream, NxChar name[Nx_EMITTER_NAME_LEN])
 
 void write_enabled(NxMemoryStream *stream, NxBool enabled)
 {
-    write(stream, &enabled, sizeof(enabled));
+    write(stream, &enabled, sizeof(NxU8));
+}
+
+void write_blending(NxMemoryStream *stream, NxBlending blending)
+{
+    write_NxU32(stream, blending);
 }
 
 void write_modules(NxMemoryStream *stream, NxModules *modules)
@@ -151,6 +156,11 @@ void read_enabled(NxMemoryStream *stream, NxBool *enabled)
     *enabled = read_NxU8(stream);
 }
 
+void read_blending(NxMemoryStream *stream, NxBlending *blending)
+{
+    *blending = read_NxU32(stream);
+}
+
 void read_modules(NxMemoryStream *stream, NxModules *modules)
 {
     for (NxU32 i = 0; i < NxModuleQueue_Count; i++)
@@ -202,6 +212,7 @@ NxParseResult Nx_system_store(const NxSystem *system, NxBuffer *out)
 
         write_name(&stream, e->name);
         write_enabled(&stream, e->enabled);
+        write_blending(&stream, e->blending);
         write_modules(&stream, &e->modules);
     }
 
@@ -256,6 +267,7 @@ NxParseResult Nx_system_load(NxSystem *system, const void *data, NxUsize size)
 
         read_name(&stream, e.config.name);
         read_enabled(&stream, &e.config.enabled);
+        read_blending(&stream, &e.config.blending);
         read_modules(&stream, &e.config.modules);
 
         if (stream.result != NxParse_Success)

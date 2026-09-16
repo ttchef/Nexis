@@ -39,8 +39,8 @@ typedef struct
 
 typedef enum
 {
-    NxBlendingOpaque,
-    NxBlendingAdditive,
+    NxBlending_Opaque,
+    NxBlending_Additive,
 } NxBlending;
 
 #define Nx_EMITTER_NAME_LEN (32)

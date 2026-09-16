@@ -134,6 +134,14 @@ typedef struct
     NxModuleQueue queues[NxModuleQueue_Count];
 } NxModules;
 
+typedef enum
+{
+    NxRemove,
+    NxStay,
+} NxRemoveOption;
+
+typedef NxRemoveOption (*Nx_remove_module_func)(NxU32 index, NxModuleType type, void *userdata);
+
 typedef void (*Nx_for_each_module_func)(NxModuleType type, void *module_data, void *userdata);
 
 void Nx_modules_create(NxModules *out);
@@ -141,6 +149,8 @@ void Nx_modules_create(NxModules *out);
 void Nx_modules_destroy(NxModules *modules);
 
 void Nx_modules_for_each(NxModules *modules, NxModuleQueueIndex queue, Nx_for_each_module_func func, void *userdata);
+
+void Nx_modules_remove(NxModules *modules, NxModuleQueueIndex queue, Nx_remove_module_func func, void *userdata);
 
 // NOTE: Add module functions
 #define Nx_FIELD(...)
