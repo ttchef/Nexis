@@ -229,16 +229,28 @@ static void setup_emitters(AppContext &ctx, NxEmitter &add_emitter, ui::Selected
                                         {
                                             auto ctx = static_cast<FunctionContext *>(userdata);
                                             ImGui::PushID(ctx->index);
+                                            if (ImGui::BeginTable("module_row", 2, ImGuiTableFlags_SizingFixedFit))
+                                            {
+                                                ImGui::TableSetupColumn("##name", ImGuiTableColumnFlags_WidthStretch);
+                                                ImGui::TableSetupColumn("##del", ImGuiTableColumnFlags_WidthFixed, ImGui::GetFrameHeight());
 
-                                            if (ImGui::Selectable(Nx_MODULE_NAME_LOOKUP[type]))
-                                            {
-                                                *ctx->module = {ctx->emitter_index, ctx->queue_index, ctx->index, false};
+                                                ImGui::TableNextRow();
+                                                ImGui::TableSetColumnIndex(0);
+                                                ImGui::SetNextItemAllowOverlap();
+                                                if (ImGui::Selectable(Nx_MODULE_NAME_LOOKUP[type], false, ImGuiSelectableFlags_SpanAllColumns))
+                                                {
+                                                    *ctx->module = {ctx->emitter_index, ctx->queue_index, ctx->index, false};
+                                                }
+
+                                                ImGui::TableSetColumnIndex(1);
+                                                if (ImGui::SmallButton("X"))
+                                                {
+                                                    ctx->remove_index = ctx->index;
+                                                }
+
+                                                ImGui::EndTable();
                                             }
-                                            ImGui::SameLine();
-                                            if (ImGui::Button("Delete"))
-                                            {
-                                                ctx->remove_index = ctx->index;
-                                            }
+                                            
                                             ImGui::PopID();
                                             ++ctx->index; }, &function_ctx);
                     if (function_ctx.remove_index != -1)

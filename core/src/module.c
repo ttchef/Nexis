@@ -133,7 +133,6 @@ void Nx_modules_remove(NxModules *modules, NxModuleQueueIndex queue, Nx_remove_m
             // NOTE: Is it the last module?
             if (module_end == q->data + q->used)
             {
-                fprintf(stderr, "[NEXIS] Test print this is the last module\n");
                 if (q->used < header->size)
                 {
                     break;
