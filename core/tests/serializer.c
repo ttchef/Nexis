@@ -10,6 +10,8 @@ NxI32 LLVMFuzzerTestOneInput(const NxU8 *data, NxUsize size)
 
 	NxSystem system;
 	Nx_system_load(&system, &buffer);
+
+	Nx_buffer_free(&buffer);
 	
 	return 0;
 }

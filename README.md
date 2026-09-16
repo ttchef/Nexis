@@ -42,4 +42,3 @@ Editor:
   - [ImGui](https://github.com/ocornut/imgui.git)
   - [Raylib](https://github.com/raysan5/raylib.git)
   - [NFD](https://github.com/btzy/nativefiledialog-extended)
-# Nexis

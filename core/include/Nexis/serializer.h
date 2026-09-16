@@ -8,6 +8,12 @@
 // So it defines a load and store function to read it from memory.
 // 
 
+typedef enum
+{
+	NxBufferKind_Normal,
+	NxBufferKind_Virtual,
+} NxBufferKind;
+
 typedef struct
 {
 	void *data;

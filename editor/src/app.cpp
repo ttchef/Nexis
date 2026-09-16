@@ -68,16 +68,18 @@ void App::update()
 void App::draw()
 {
     AppContext ctx = make_context();
+
+    BeginDrawing();
     if (this->state == AppState::Editor)
     {
         BeginTextureMode(this->ui.editor.scene);
         ClearBackground(BLACK);
+        DrawCircle(0, 0, 150, RED);
 
         BeginMode3D(this->camera.raylib);
 
         BeginShaderMode(this->grid_shader.handle);
         DrawPlane({0.0f, 0.0f, 0.0f}, {20.0f, 20.0f}, RED);
-
         EndShaderMode();
 
         Nx_system_render_emitters(&this->project.system, &this->renderer);
@@ -86,7 +88,6 @@ void App::draw()
         EndTextureMode();
     }
 
-    BeginDrawing();
     ClearBackground(BLACK);
     this->state = this->ui.draw(this->state, ctx);
     EndDrawing();
