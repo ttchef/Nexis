@@ -18,4 +18,8 @@ target_include_directories(nexis_core PUBLIC
 
 target_compile_features(nexis_core PUBLIC c_std_99)
 
+if (UNIX)
+  target_link_libraries(nexis_core PRIVATE m)
+endif()
+
 add_subdirectory(tests)

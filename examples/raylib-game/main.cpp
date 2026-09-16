@@ -1,9 +1,9 @@
 
 #include <raylib.h>
+#include <Nexis/core.h>
 
 int main()
 {
-
 	InitWindow(800, 600, "Titel");
 
 	while (!WindowShouldClose())

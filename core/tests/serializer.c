@@ -1,10 +1,10 @@
 
 #include <Nexis/core.h>
 
-int LLVMFuzzerTestOneInput(void *data, long long size)
+NxI32 LLVMFuzzerTestOneInput(const NxU8 *data, NxUsize size)
 {
 	NxBuffer buffer = {
-		.data = data,
+		.data = (void *)data,
 		.size = size,
 	};
 
