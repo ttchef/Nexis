@@ -33,11 +33,11 @@ cmake -B build -DNEXIS_BUILD_EXAMPLES=ON
 ```
 
 # Dependencies
-  Core:
-    - libc
-    - libm
+Core:
+  - libc
+  - libm
 
-  Editor:
+Editor:
   - [rlImGui](https://github.com/raylib-extras/rlImGui.git)
   - [ImGui](https://github.com/ocornut/imgui.git)
   - [Raylib](https://github.com/raysan5/raylib.git)
