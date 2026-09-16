@@ -160,3 +160,6 @@ Nx_MODULES(Nx_MODULE, Nx_FIELD)
     Nx_MODULES(Nx_MODULE, Nx_FIELD)
 #undef Nx_MODULE
 #undef Nx_FIELD
+
+static const NxU64 Nx_QUEUE_SIZE = Nx_GB(1ull);
+

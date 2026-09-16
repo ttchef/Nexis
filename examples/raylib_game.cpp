@@ -53,7 +53,13 @@ int main()
     // If you wanna have multiple particle effects you will have multiple
     // of these systems, one corresponding to one effect.
     NxSystem system;
-    Nx_system_load(&system, &asset);
+    NxParseResult result = Nx_system_load(&system, asset.data, asset.size);
+
+    if (result != NxParse_Success)
+    {
+        printf("Failed to load nexis system from memory: %s\n", Nx_parse_result_string(result));
+        return 1;
+    }
 
     // This is the renderer which descripeds how the particles will be rendered.
     // You only need to pass in a valid particles_draw function which you can ehter make yourself

@@ -6,8 +6,6 @@
 #include <stdio.h>
 #include <string.h>
 
-static const NxU64 QUEUE_SIZE = Nx_GB(1ull);
-
 void Nx_module_queue_create(NxModuleQueue *out)
 {
     if (!out)
@@ -16,7 +14,7 @@ void Nx_module_queue_create(NxModuleQueue *out)
     }
 
     out->used = 0;
-    out->data = Nx_virtual_alloc(QUEUE_SIZE);
+    out->data = Nx_virtual_alloc(Nx_QUEUE_SIZE);
     assert(out->data);
 }
 
@@ -27,7 +25,7 @@ void Nx_module_queue_destroy(NxModuleQueue *queue)
         return;
     }
 
-    Nx_virtual_free(queue->data, QUEUE_SIZE);
+    Nx_virtual_free(queue->data, Nx_QUEUE_SIZE);
     queue->used = 0;
     queue->data = NULL;
 }
@@ -45,7 +43,7 @@ void Nx_module_queue_push(NxModuleQueue *queue, void *data, NxU64 size)
         return;
     }
 
-    if (queue->used + size >= QUEUE_SIZE)
+    if (queue->used + size >= Nx_QUEUE_SIZE)
     {
         fprintf(stderr, "[NEXIS] Module queue ran out of memory\n");
         return;

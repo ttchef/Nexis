@@ -1,13 +1,14 @@
 
-#include <Nexis/serializer.h>
+#include <Nexis/parser.h>
 #include <alloc.h>
 #include <darray.h>
 
 typedef struct
 {
-    NxU8   *data;
-    NxUsize size;
-    NxUsize at;
+    NxU8         *data;
+    NxUsize       size;
+    NxUsize       at;
+    NxParseResult result;
 } NxMemoryStream;
 
 #define Nx_MAX_FILE_SIZE (Nx_GB(10ull))
@@ -16,8 +17,14 @@ typedef struct
 
 static inline void write(NxMemoryStream *stream, void *data, NxUsize size)
 {
-    if (stream->at + size <= stream->size)
+    if (stream->result != NxParse_Success)
     {
+        return;
+    }
+
+    if (size > stream->size - stream->at)
+    {
+        stream->result = NxParse_BufferOverflow;
         return;
     }
 
@@ -73,8 +80,14 @@ void write_modules(NxMemoryStream *stream, NxModules *modules)
 
 static inline void *read(NxMemoryStream *stream, NxUsize size)
 {
-    if (stream->at - size <= stream->at)
+    if (stream->result != NxParse_Success)
     {
+        return NULL;
+    }
+
+    if (size > stream->at)
+    {
+        stream->result = NxParse_UnexpectedEOF;
         return NULL;
     }
 
@@ -85,22 +98,29 @@ static inline void *read(NxMemoryStream *stream, NxUsize size)
 
 static inline NxU8 read_NxU8(NxMemoryStream *stream)
 {
-    return *(NxU8 *)read(stream, sizeof(NxU8));
+    NxU8 *p = read(stream, sizeof(NxU8));
+    return p ? *p : 0;
 }
 
 static inline NxU32 read_NxU32(NxMemoryStream *stream)
 {
-    return *(NxU32 *)read(stream, sizeof(NxU32));
+    NxU32 *p = read(stream, sizeof(NxU32));
+    return p ? *p : 0;
 }
 
 static inline NxU64 read_NxU64(NxMemoryStream *stream)
 {
-    return *(NxU64 *)read(stream, sizeof(NxU64));
+    NxU64 *p = read(stream, sizeof(NxU64));
+    return p ? *p : 0;
 }
 
 void read_name(NxMemoryStream *stream, NxChar name[Nx_EMITTER_NAME_LEN])
 {
-    memcpy(name, read(stream, Nx_EMITTER_NAME_LEN), Nx_EMITTER_NAME_LEN);
+    void *p = read(stream, Nx_EMITTER_NAME_LEN);
+    if (p)
+    {
+        memcpy(name, p, Nx_EMITTER_NAME_LEN);
+    }
 }
 
 void read_enabled(NxMemoryStream *stream, NxBool *enabled)
@@ -114,25 +134,37 @@ void read_modules(NxMemoryStream *stream, NxModules *modules)
     {
         NxModuleQueue *q = &modules->queues[i];
 
-        q->used    = read_NxU64(stream);
+        NxU64 used    = read_NxU64(stream);
+        if (used > Nx_QUEUE_SIZE)
+        {
+            stream->result = NxParse_CorruptData;
+            return;
+        }
         void *data = read(stream, q->used);
+        if (!data)
+        {
+            return;
+        }
+
+        q->used = used;
         memcpy(q->data, data, q->used);
     }
 }
 
 // -------
 
-NxBool Nx_system_store(const NxSystem *system, NxBuffer *out)
+NxParseResult Nx_system_store(const NxSystem *system, NxBuffer *out)
 {
     if (!system || !system->emitters || !out)
     {
-        return false;
+        return NxParse_InvalidParameters;
     }
 
     NxMemoryStream stream = {
         .at   = 0,
         .data = Nx_virtual_alloc(Nx_MAX_FILE_SIZE),
         .size = Nx_MAX_FILE_SIZE,
+        .result = NxParse_Success,
     };
 
     NxU32 emitter_count = Nx_darray_len(system->emitters);
@@ -147,20 +179,32 @@ NxBool Nx_system_store(const NxSystem *system, NxBuffer *out)
         write_modules(&stream, &e->modules);
     }
 
+    if (stream.result != NxParse_Success)
+    {
+        Nx_virtual_free(stream.data, Nx_MAX_FILE_SIZE);
+        return stream.result;
+    }
+
     *out = (NxBuffer){
         .data = stream.data,
         .size = stream.at,
     };
 
-    return true;
+    return NxParse_Success;
 }
 
-void Nx_system_load(NxSystem *system, NxBuffer *buffer)
+NxParseResult Nx_system_load(NxSystem *system, const void *data, NxUsize size)
 {
+    if (!system || !data)
+    {
+        return NxParse_InvalidParameters;
+    }
+
     NxMemoryStream stream = {
-        .at   = buffer->size,
-        .size = buffer->size,
-        .data = buffer->data,
+        .at   = size,
+        .size = size,
+        .data = (void *)data,
+        .result = NxParse_Success,
     };
 
     NxU32 emitter_count = read_NxU32(&stream);
@@ -174,8 +218,15 @@ void Nx_system_load(NxSystem *system, NxBuffer *buffer)
         read_enabled(&stream, &e.config.enabled);
         read_modules(&stream, &e.config.modules);
 
+        if (stream.result != NxParse_Success)
+        {
+            break;
+        }
+
         Nx_system_add_emitter(system, &e);
     }
+
+    return stream.result;
 }
 
 void Nx_buffer_free(NxBuffer *buffer)

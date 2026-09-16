@@ -46,12 +46,11 @@ void Project::load(ProjectHeader header)
 		return;
 	}
 
-	NxBuffer buffer = {
-		.data = data.data(),
-		.size = data.size(),	
-	};
-
-	Nx_system_load(&this->system, &buffer);
+	NxParseResult result = Nx_system_load(&this->system, data.data(), data.size());
+	if (result != NxParse_Success)
+	{
+		std::cout << "Failed to load particle system: " << Nx_parse_result_string(result) << std::endl;
+	}
 }
 
 void Project::store()
@@ -64,7 +63,11 @@ void Project::store()
 	}
 
 	NxBuffer system_data;
-	Nx_system_store(&this->system, &system_data);
+	NxParseResult result = Nx_system_store(&this->system, &system_data);
+	if (result != NxParse_Success)
+	{
+		std::cout << "Failed to store particle system: " << Nx_parse_result_string(result) << std::endl;
+	}
 
 	file.write(static_cast<char *>(system_data.data), static_cast<std::streamsize>(system_data.size));
 	Nx_buffer_free(&system_data);

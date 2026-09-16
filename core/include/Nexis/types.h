@@ -26,6 +26,9 @@ typedef size_t NxUsize;
 #define Nx_ARRAY_COUNT(x) (sizeof(x) / sizeof((x)[0]))
 #define Nx_MAX(a, b)              ((a) > (b) ? (a) : (b))
 #define Nx_MIN(a, b)              ((a) < (b) ? (a) : (b))
+#define Nx_KB(n) ((n) << 10)
+#define Nx_MB(n) ((n) << 20)
+#define Nx_GB(n) ((n) << 30)
 
 // NOTE: Forward declaration for public api types
 typedef struct NxParticle NxParticle;

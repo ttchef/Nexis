@@ -19,4 +19,3 @@ using f64 = double;
 using usize = std::size_t;
 
 #define ARRAY_COUNT(x) (sizeof(x) / sizeof((x)[0]))
-
