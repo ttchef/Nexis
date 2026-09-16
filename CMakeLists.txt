@@ -3,6 +3,7 @@ project(Nexis VERSION 1.0.0)
 
 # Build options
 option(NEXIS_BUILD_EDITOR "Build Nexis editor" ON)
+option(NEXIS_BUILD_EXAMPLES "Build Nexis examples" OFF)
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -18,4 +19,8 @@ add_subdirectory(core)
 
 if (NEXIS_BUILD_EDITOR)
     add_subdirectory(editor)
+endif()
+
+if (NEXIS_BUILD_EXAMPLES)
+    add_subdirectory(examples/raylib-game)
 endif()

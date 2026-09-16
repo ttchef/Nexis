@@ -27,6 +27,11 @@ compiler available on your system. Then you can configure the cmake build to inc
 cmake -B build -DCMAKE_C_COMPILER=clang -DNEXIS_ENABLE_FUZZING=ON -DNEXIS_BUILD_EDITOR=OFF
 ```
 
+To build the examples in the root examples/ folder you can do
+```bash
+cmake -B build -DNEXIS_BUILD_EXAMPLES=ON
+```
+
 # Dependencies
   Core:
     - libc

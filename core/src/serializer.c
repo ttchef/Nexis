@@ -1,7 +1,7 @@
 
 #include <Nexis/serializer.h>
-#include <darray.h>
 #include <alloc.h>
+#include <darray.h>
 
 typedef struct
 {
@@ -16,7 +16,11 @@ typedef struct
 
 static inline void write(NxMemoryStream *stream, void *data, NxUsize size)
 {
-    assert(stream->at + size <= stream->size);
+    if (stream->at + size <= stream->size)
+    {
+        return;
+    }
+
     memcpy(&stream->data[stream->at], data, size);
     stream->at += size;
 }
@@ -58,7 +62,7 @@ void write_modules(NxMemoryStream *stream, NxModules *modules)
     for (NxU32 i = 0; i < NxModuleQueue_Count; i++)
     {
         NxModuleQueue *q = &modules->queues[i];
-        
+
         write_NxU64(stream, q->used);
         write(stream, q->data, q->used);
     }
@@ -69,7 +73,11 @@ void write_modules(NxMemoryStream *stream, NxModules *modules)
 
 static inline void *read(NxMemoryStream *stream, NxUsize size)
 {
-    assert(stream->at - size <= stream->at);
+    if (stream->at - size <= stream->at)
+    {
+        return NULL;
+    }
+
     void *data = &stream->data[stream->size - stream->at];
     stream->at -= size;
     return data;
@@ -106,7 +114,7 @@ void read_modules(NxMemoryStream *stream, NxModules *modules)
     {
         NxModuleQueue *q = &modules->queues[i];
 
-        q->used = read_NxU64(stream);
+        q->used    = read_NxU64(stream);
         void *data = read(stream, q->used);
         memcpy(q->data, data, q->used);
     }
@@ -122,9 +130,9 @@ NxBool Nx_system_store(const NxSystem *system, NxBuffer *out)
     }
 
     NxMemoryStream stream = {
-          .at = 0,
-          .data = Nx_virtual_alloc(Nx_MAX_FILE_SIZE),
-          .size = Nx_MAX_FILE_SIZE,
+        .at   = 0,
+        .data = Nx_virtual_alloc(Nx_MAX_FILE_SIZE),
+        .size = Nx_MAX_FILE_SIZE,
     };
 
     NxU32 emitter_count = Nx_darray_len(system->emitters);
@@ -141,7 +149,7 @@ NxBool Nx_system_store(const NxSystem *system, NxBuffer *out)
 
     *out = (NxBuffer){
         .data = stream.data,
-        .size = stream.at, 
+        .size = stream.at,
     };
 
     return true;
@@ -150,11 +158,11 @@ NxBool Nx_system_store(const NxSystem *system, NxBuffer *out)
 void Nx_system_load(NxSystem *system, NxBuffer *buffer)
 {
     NxMemoryStream stream = {
-        .at = buffer->size,
+        .at   = buffer->size,
         .size = buffer->size,
-        .data = buffer->data,    
+        .data = buffer->data,
     };
-    
+
     NxU32 emitter_count = read_NxU32(&stream);
 
     for (NxU32 i = 0; i < emitter_count; i++)

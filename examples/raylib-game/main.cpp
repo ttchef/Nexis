@@ -4,6 +4,8 @@
 
 int main()
 {
+	SetTraceLogLevel(LOG_WARNING);
+	SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_MSAA_4X_HINT);
 	InitWindow(800, 600, "Titel");
 
 	while (!WindowShouldClose())

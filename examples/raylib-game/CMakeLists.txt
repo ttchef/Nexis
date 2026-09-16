@@ -8,5 +8,5 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(${PROJECT_NAME} main.cpp)
 target_include_directories(${PROJECT_NAME} PRIVATE ../../core/include)
-target_link_libraries(${PROJECT_NAME} PRIVATE Nexis::Core)
+target_link_libraries(${PROJECT_NAME} PRIVATE Nexis::Core raylib)
 
