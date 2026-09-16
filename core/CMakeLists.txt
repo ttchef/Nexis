@@ -17,3 +17,5 @@ target_include_directories(nexis_core PUBLIC
 )
 
 target_compile_features(nexis_core PUBLIC c_std_99)
+
+add_subdirectory(tests)
